@@ -117,38 +117,58 @@ function ProfilePage() {
           business.
         </p>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <Link to="/find-leads" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
-            <Search className="size-5 text-primary" />
-            <h2 className="mt-4 text-lg font-semibold text-foreground">Find Leads</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Search by service, location and lead type, then generate targeted lead lists.</p>
-          </Link>
-          <Link to="/leads-store" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
-            <Store className="size-5 text-primary" />
-            <h2 className="mt-4 text-lg font-semibold text-foreground">Leads Store</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Review all saved leads and move them into research one by one.</p>
-          </Link>
-          <Link to="/train-pitch" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
-            <Sparkles className="size-5 text-primary" />
-            <h2 className="mt-4 text-lg font-semibold text-foreground">Train Pitch</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Train the AI to shape your pitch message around the right buyer and offer.</p>
-          </Link>
-          <Link to="/gig-creator" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
-            <Sparkles className="size-5 text-primary" />
-            <h2 className="mt-4 text-lg font-semibold text-foreground">Gig Creator</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Turn one keyword into a full premium Fiverr-style gig blueprint.</p>
-          </Link>
-          <Link to="/ai-browser" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
-            <Globe className="size-5 text-primary" />
-            <h2 className="mt-4 text-lg font-semibold text-foreground">AI Browser</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Give the browser a task and let the automation assistant navigate the target site.</p>
-          </Link>
-          <Link to="/storage" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
-            <FolderOpen className="size-5 text-primary" />
-            <h2 className="mt-4 text-lg font-semibold text-foreground">Saved Research</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Review all of your saved research reports and pitch outputs.</p>
-          </Link>
-        </div>
+        <nav className="mt-8 rounded-3xl border border-border bg-card p-2 shadow-sm">
+          <div className="divide-y divide-border">
+            <Link to="/profile" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
+                <Search className="size-4" />
+              </span>
+              Your background
+            </Link>
+            <Link to="/find-leads" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
+                <Search className="size-4" />
+              </span>
+              Find Leads
+            </Link>
+            <Link to="/leads-store" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
+                <Store className="size-4" />
+              </span>
+              Leads Store
+            </Link>
+            <Link to="/train-pitch" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
+                <Sparkles className="size-4" />
+              </span>
+              Train Pitch
+            </Link>
+            <Link to="/gig-creator" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
+                <Sparkles className="size-4" />
+              </span>
+              Gig Creator
+            </Link>
+            <Link to="/ai-browser" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
+                <Globe className="size-4" />
+              </span>
+              AI Browser
+            </Link>
+            <Link to="/storage" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
+                <FolderOpen className="size-4" />
+              </span>
+              Saved research
+            </Link>
+            <Link to="/admin" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
+              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
+                <Search className="size-4" />
+              </span>
+              Admin Dashboard
+            </Link>
+          </div>
+        </nav>
 
         {isLoading ? (
           <p className="mt-10 flex items-center gap-2 text-muted-foreground">
