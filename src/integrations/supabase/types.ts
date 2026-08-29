@@ -91,7 +91,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_analysis_usage: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          allowed: boolean
+          used: number
+          limit_value: number
+        }[]
+      }
+      consume_lead_search_budget: {
+        Args: {
+          requested_count: number
+        }
+        Returns: {
+          allowed: boolean
+          used: number
+          remaining: number
+          limit_value: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

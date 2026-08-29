@@ -12,6 +12,15 @@ export type Lead = {
   phone?: string;
   website?: string;
   addedAt: string;
+  enrichment?: {
+    rating?: number;
+    reviewCount?: number;
+    categories?: string[];
+    overview?: string;
+    businessStatus?: string;
+    placeUrl?: string;
+    matchScore?: number;
+  };
 };
 
 const SEEN_LEADS_KEY = "ace_pitch_seen_leads_v1";

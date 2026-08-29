@@ -31,7 +31,7 @@ function LeadsStorePage() {
 
   async function openResearch(lead: Lead) {
     const payload = {
-      url: lead.website ?? "https://example.com",
+      url: lead.website ?? lead.enrichment?.placeUrl ?? "https://www.google.com/maps",
       businessName: lead.company,
       bestPitchTitle: `${lead.service} for ${lead.company}`,
       result: {
@@ -40,6 +40,7 @@ function LeadsStorePage() {
         notes: [
           `Research this lead for ${lead.service} opportunities in ${lead.location}.`,
           `Focus on buyer pain, positioning, and an outreach angle tailored to ${lead.company}.`,
+          "Lead source: Google Places. Contact fields are only populated when supplied by the provider.",
         ],
       },
     };

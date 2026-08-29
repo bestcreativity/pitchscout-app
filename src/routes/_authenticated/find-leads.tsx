@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, Search, Store, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Search, Store, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { searchPlacesLeads } from "@/lib/google-places";
 import {
   addStoredLead,
   buildLeadKey,
-  generateLeadCandidates,
   getSeenLeadKeys,
   rememberSeenLeadKeys,
   type Lead,
@@ -26,29 +27,46 @@ export const Route = createFileRoute("/_authenticated/find-leads")({
 });
 
 function FindLeadsPage() {
+  const searchLeads = useServerFn(searchPlacesLeads);
   const [service, setService] = useState("Website Design");
   const [location, setLocation] = useState("United States");
   const [source, setSource] = useState<LeadSource>("website");
   const [leadCount, setLeadCount] = useState(8);
   const [results, setResults] = useState<Lead[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  function handleGenerate() {
-    const seen = new Set(getSeenLeadKeys());
-    const candidates = generateLeadCandidates({
-      service,
-      location,
-      source,
-      total: Math.max(1, Math.min(leadCount, 30)),
-    }).filter((lead) => !seen.has(buildLeadKey(lead)));
+  async function handleGenerate() {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const seen = new Set(getSeenLeadKeys());
+      const total = Math.max(1, Math.min(leadCount, 30));
+      const candidates = (await searchLeads({
+        data: {
+          service,
+          location,
+          source,
+          total,
+        },
+      })) as Lead[];
 
-    rememberSeenLeadKeys(candidates);
-    setResults(candidates);
-    setMessage(
-      candidates.length
-        ? `Found ${candidates.length} new leads for ${service} in ${location}.`
-        : "No new leads were found with the current filters. Try a wider search or different source type.",
-    );
+      const uniqueCandidates = candidates.filter((lead) => !seen.has(buildLeadKey(lead)));
+      rememberSeenLeadKeys(uniqueCandidates);
+      setResults(uniqueCandidates);
+      setMessage(
+        uniqueCandidates.length
+          ? `Found ${uniqueCandidates.length} high-match leads for ${service} in ${location} via Google Places.`
+          : "No leads matched the current filters. Try a broader service name, city, or source target.",
+      );
+    } catch (error) {
+      setResults([]);
+      setMessage(
+        error instanceof Error ? error.message : "Lead search failed. Please try again in a moment.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   function moveAllToStore() {
@@ -99,8 +117,8 @@ function FindLeadsPage() {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button onClick={handleGenerate} className="rounded-full">
-              <Search className="size-4" /> Generate leads
+            <Button onClick={handleGenerate} disabled={loading} className="rounded-full">
+              <Search className="size-4" /> {loading ? "Searching Google Places..." : "Generate leads"}
             </Button>
             {results.length > 0 && (
               <Button variant="outline" onClick={moveAllToStore} className="rounded-full">
@@ -131,9 +149,13 @@ function FindLeadsPage() {
                   <p><span className="font-medium text-foreground">Service:</span> {lead.service}</p>
                   <p><span className="font-medium text-foreground">Location:</span> {lead.location}</p>
                   <p><span className="font-medium text-foreground">Source:</span> {lead.source}</p>
-                  <p><span className="font-medium text-foreground">Email:</span> {lead.email}</p>
-                  <p><span className="font-medium text-foreground">Phone:</span> {lead.phone}</p>
-                  <p><span className="font-medium text-foreground">Website:</span> {lead.website}</p>
+                  {lead.email && <p><span className="font-medium text-foreground">Email:</span> {lead.email}</p>}
+                  {lead.phone && <p><span className="font-medium text-foreground">Phone:</span> {lead.phone}</p>}
+                  {lead.enrichment?.rating && <p><span className="font-medium text-foreground">Rating:</span> {lead.enrichment.rating} ({lead.enrichment.reviewCount ?? 0} reviews)</p>}
+                  {lead.enrichment?.categories?.length ? <p><span className="font-medium text-foreground">Categories:</span> {lead.enrichment.categories.slice(0, 3).join(", ")}</p> : null}
+                  {lead.enrichment?.overview && <p><span className="font-medium text-foreground">Overview:</span> {lead.enrichment.overview}</p>}
+                  {lead.website && <p><span className="font-medium text-foreground">Website:</span> {lead.website}</p>}
+                  {lead.enrichment?.placeUrl && <a className="inline-flex items-center gap-1 text-primary hover:underline" href={lead.enrichment.placeUrl} target="_blank" rel="noreferrer noopener">Open Google Maps <ExternalLink className="size-3" /></a>}
                 </div>
 
                 <Button
