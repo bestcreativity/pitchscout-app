@@ -1,0 +1,547 @@
+const AI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const MODEL = "gemini-3.6-flash";
+
+export type Opportunity = {
+  title: string;
+  score: number;
+  confidence: "High" | "Medium" | "Low";
+  valueLow: number;
+  valueHigh: number;
+  problem: string;
+  evidence: string;
+  opportunity: string;
+  solution: string;
+  benefit: string;
+  pitchAngle: string;
+};
+
+export type ContactInfo = {
+  emails: string[];
+  phones: string[];
+  socials: { platform: string; url: string }[];
+  address: string;
+  contactPageUrl: string;
+};
+
+export type PitchStructure = {
+  subjectLine: string;
+  opening: string;
+  points: { point: string; detail: string }[];
+  callToAction: string;
+  toneTips: string;
+};
+
+export type AnalysisResult = {
+  url: string;
+  fetched: boolean;
+  partial: boolean;
+  notes: string[];
+  business: {
+    name: string;
+    industry: string;
+    location: string;
+    whatTheyDo: string;
+    whoTheyServe: string;
+    services: string;
+    businessModel: string;
+  };
+  contact: ContactInfo;
+  pitchStructure: PitchStructure;
+  bestPitch: {
+    title: string;
+    score: number;
+    why: string;
+    whatToOffer: string;
+    howToApproach: string;
+  };
+  opportunities: Opportunity[];
+  websiteFindings: { finding: string; evidence: string; impact: string }[];
+};
+
+function platformOf(url: string) {
+  const map: [RegExp, string][] = [
+    [/facebook/i, "Facebook"],
+    [/instagram/i, "Instagram"],
+    [/linkedin/i, "LinkedIn"],
+    [/(twitter|x\.com)/i, "X (Twitter)"],
+    [/tiktok/i, "TikTok"],
+    [/youtube/i, "YouTube"],
+    [/(wa\.me|whatsapp)/i, "WhatsApp"],
+  ];
+  for (const [re, name] of map) if (re.test(url)) return name;
+  return "Social";
+}
+
+
+function normalizeUrl(raw: string) {
+  const trimmed = raw.trim();
+  if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`;
+  return trimmed;
+}
+
+function stripHtml(html: string) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+type PageSignals = {
+  ok: boolean;
+  status?: number;
+  error?: string;
+  title?: string | undefined;
+  metaDescription?: string | undefined;
+  text?: string | undefined;
+  links?: string[];
+  socialLinks?: string[];
+  emails?: string[];
+  phones?: string[];
+  hasViewport?: boolean;
+  hasSchema?: boolean;
+  hasBookingWords?: boolean;
+  hasForm?: boolean;
+  bytes?: number;
+  loadMs?: number;
+  https?: boolean;
+};
+
+async function fetchPage(url: string): Promise<PageSignals> {
+  const start = Date.now();
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; ACEPITCH/1.0; business analysis bot)",
+        Accept: "text/html,application/xhtml+xml",
+      },
+      redirect: "follow",
+    });
+    const html = await res.text();
+    const loadMs = Date.now() - start;
+    if (!res.ok) {
+      return { ok: false, status: res.status, error: `HTTP ${res.status}`, loadMs };
+    }
+    const title = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1]?.trim();
+    const metaDescription =
+      /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i.exec(
+        html,
+      )?.[1] ?? undefined;
+    const hrefs = Array.from(html.matchAll(/href=["']([^"']+)["']/gi)).map(
+      (m) => m[1] ?? "",
+    ).filter(Boolean);
+    const social = hrefs.filter((h) =>
+      /(facebook|instagram|linkedin|twitter|x\.com|tiktok|youtube|wa\.me|whatsapp)/i.test(
+        h,
+      ),
+    );
+    const emails = Array.from(
+      new Set(html.match(/[\w.+-]+@[\w-]+\.[\w.]{2,}/g) ?? []),
+    ).slice(0, 5);
+    const phones = Array.from(
+      new Set(html.match(/(?:tel:)([+\d][\d\s().-]{6,})/gi) ?? []),
+    ).slice(0, 5);
+    const text = stripHtml(html).slice(0, 14000);
+
+    return {
+      ok: true,
+      status: res.status,
+      title,
+      metaDescription,
+      text,
+      links: Array.from(new Set(hrefs)).slice(0, 60),
+      socialLinks: Array.from(new Set(social)).slice(0, 12),
+      emails,
+      phones,
+      hasViewport: /name=["']viewport["']/i.test(html),
+      hasSchema: /application\/ld\+json/i.test(html),
+      hasBookingWords: /book now|book online|schedule|appointment|reserve/i.test(
+        html,
+      ),
+      hasForm: /<form/i.test(html),
+      bytes: html.length,
+      loadMs,
+      https: url.startsWith("https://"),
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Fetch failed",
+      loadMs: Date.now() - start,
+    };
+  }
+}
+
+async function fetchSubPages(base: string, links: string[]) {
+  const candidates = new Set<string>();
+  for (const href of links) {
+    if (!/^(https?:)?\/\//.test(href) && !href.startsWith("/")) continue;
+    let abs: string;
+    try {
+      abs = new URL(href, base).toString();
+    } catch {
+      continue;
+    }
+    if (new URL(abs).host !== new URL(base).host) continue;
+    if (/(about|service|contact|pricing|work|product|shop)/i.test(abs)) {
+      candidates.add(abs.split("#")[0] ?? abs);
+    }
+    if (candidates.size >= 3) break;
+  }
+  const results = await Promise.all(
+    Array.from(candidates).map(async (u) => {
+      const p = await fetchPage(u);
+      return { url: u, ok: p.ok, text: p.text?.slice(0, 5000) ?? "" };
+    }),
+  );
+  return results.filter((r) => r.ok && r.text);
+}
+
+const SCHEMA = {
+  name: "ace_pitch_analysis",
+  description:
+    "Structured analysis of a business and the services that could realistically be pitched to it.",
+  parameters: {
+    type: "object",
+    properties: {
+      business: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          industry: { type: "string" },
+          location: { type: "string" },
+          whatTheyDo: { type: "string" },
+          whoTheyServe: { type: "string" },
+          services: { type: "string" },
+          businessModel: { type: "string" },
+        },
+        required: [
+          "name",
+          "industry",
+          "location",
+          "whatTheyDo",
+          "whoTheyServe",
+          "services",
+          "businessModel",
+        ],
+      },
+      bestPitch: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          score: { type: "number" },
+          why: { type: "string" },
+          whatToOffer: { type: "string" },
+          howToApproach: { type: "string" },
+        },
+        required: ["title", "score", "why", "whatToOffer", "howToApproach"],
+      },
+      opportunities: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            score: { type: "number" },
+            confidence: { type: "string", enum: ["High", "Medium", "Low"] },
+            valueLow: { type: "number" },
+            valueHigh: { type: "number" },
+            problem: { type: "string" },
+            evidence: { type: "string" },
+            opportunity: { type: "string" },
+            solution: { type: "string" },
+            benefit: { type: "string" },
+            pitchAngle: { type: "string" },
+          },
+          required: [
+            "title",
+            "score",
+            "confidence",
+            "valueLow",
+            "valueHigh",
+            "problem",
+            "evidence",
+            "opportunity",
+            "solution",
+            "benefit",
+            "pitchAngle",
+          ],
+        },
+      },
+      websiteFindings: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            finding: { type: "string" },
+            evidence: { type: "string" },
+            impact: { type: "string" },
+          },
+          required: ["finding", "evidence", "impact"],
+        },
+      },
+      contact: {
+        type: "object",
+        description:
+          "Contact details actually present in the signals. Use 'Not available' when absent.",
+        properties: {
+          address: { type: "string" },
+          contactPageUrl: { type: "string" },
+        },
+        required: ["address", "contactPageUrl"],
+      },
+      pitchStructure: {
+        type: "object",
+        description:
+          "Key points for structuring the outreach message for the best pitch.",
+        properties: {
+          subjectLine: { type: "string" },
+          opening: { type: "string" },
+          points: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                point: { type: "string" },
+                detail: { type: "string" },
+              },
+              required: ["point", "detail"],
+            },
+          },
+          callToAction: { type: "string" },
+          toneTips: { type: "string" },
+        },
+        required: [
+          "subjectLine",
+          "opening",
+          "points",
+          "callToAction",
+          "toneTips",
+        ],
+      },
+      unverified: { type: "array", items: { type: "string" } },
+    },
+    required: [
+      "business",
+      "bestPitch",
+      "opportunities",
+      "websiteFindings",
+      "contact",
+      "pitchStructure",
+    ],
+
+  },
+} as const;
+
+const SYSTEM = `You are ACE PITCH, a private business-scouting analyst for a freelance digital consultant.
+You are given raw signals scraped from a business website. Analyze the BUSINESS, not just the website.
+
+Hard rules:
+- NEVER invent facts. If a field is not supported by the provided signals, output exactly "Not available".
+- Evidence must quote or point to something actually present (or actually absent) in the signals.
+- Opportunities must be realistic to sell to THIS specific business in its industry. Do not use a generic template list; vary by business.
+- Score 0-100 weighing: realism of the pitch (most important), business relevance, potential value, strength of evidence, urgency, ease of selling.
+- Return 5 opportunities max, sorted by score descending. bestPitch must equal the top opportunity.
+- valueLow/valueHigh are rough USD project ranges (indicative, not quotes).
+- Website findings are business-relevant problems, not nitpicks.
+- contact.address / contact.contactPageUrl must come from the signals only ("Not available" otherwise).
+- pitchStructure is the skeleton of the outreach message for bestPitch. It must follow this exact order and tone:
+  1. Personalize
+  2. Greeting
+  3. Acknowledge the business
+  4. Identify a specific opportunity
+  5. Show you understand their business
+  6. Identify the real problem
+  7. Connect the problem to money or time
+  8. Present an opportunity
+  9. Propose a specific solution
+  10. Focus on business outcomes
+  11. Make the solution customized
+  12. Establish credibility
+  13. Reduce perceived risk
+  14. Use a simple CTA
+  15. Keep the message short
+  16. Avoid generic statements
+  17. Avoid criticizing the business
+  18. Don't sound desperate
+  19. Pitch the problem before the service
+  20. Give them a reason to reply
+  21. Focus on their revenue process
+  22. Make the value immediately clear
+  23. Create curiosity
+- Keep it human, specific, non-salesy, and brief. The message should naturally lead with the business problem before the service offer, and it should be tailored to this exact business.
+- List in "unverified" anything meaningful you could not confirm.`;
+
+
+export async function runAnalysis(
+  rawUrl: string,
+  background?: string,
+): Promise<AnalysisResult> {
+  const apiKey = process.env["GEMINI_API_KEY"];
+  if (!apiKey) throw new Error("Gemini AI is not configured for this project.");
+
+  const url = normalizeUrl(rawUrl);
+  const page = await fetchPage(url);
+  const notes: string[] = [];
+  let subPages: { url: string; text: string }[] = [];
+
+  if (!page.ok) {
+    notes.push(
+      `The website could not be fetched (${page.error ?? "unknown error"}).`,
+    );
+  } else {
+    subPages = (await fetchSubPages(url, page.links ?? [])).map((p) => ({
+      url: p.url,
+      text: p.text,
+    }));
+    if (!page.text || page.text.length < 300) {
+      notes.push(
+        "Very little readable text was found on the page (it may be JavaScript-rendered).",
+      );
+    }
+    if (!page.socialLinks?.length) notes.push("No social profile links found on the site.");
+    if (!page.emails?.length && !page.phones?.length)
+      notes.push("No email or phone contact details found in the page markup.");
+  }
+
+  const signals = {
+    requestedUrl: url,
+    fetchOk: page.ok,
+    httpStatus: page.status ?? null,
+    fetchError: page.error ?? null,
+    responseTimeMs: page.loadMs ?? null,
+    htmlBytes: page.bytes ?? null,
+    https: page.https ?? null,
+    title: page.title ?? null,
+    metaDescription: page.metaDescription ?? null,
+    hasViewportMeta: page.hasViewport ?? null,
+    hasStructuredData: page.hasSchema ?? null,
+    hasContactForm: page.hasForm ?? null,
+    mentionsBookingOrScheduling: page.hasBookingWords ?? null,
+    socialLinks: page.socialLinks ?? [],
+    emails: page.emails ?? [],
+    phoneLinks: page.phones ?? [],
+    internalLinks: page.links?.slice(0, 40) ?? [],
+    homepageText: page.text ?? null,
+    subPages,
+  };
+
+  const res = await fetch(AI_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            background && background.trim()
+              ? `The consultant's own background, skills and services (their offer):\n"""\n${background.trim().slice(0, 4000)}\n"""\nOnly propose opportunities this consultant can realistically deliver with the skills/services above. Weight scores toward their strengths, connect each opportunity to a specific capability they mentioned, respect their stated price range for value estimates, and never suggest work they said they don't do. Write the pitch structure in their voice, referencing their relevant experience.`
+              : "The consultant's background is not provided. Assume a general freelance digital consultant (web, SEO, automation, ads).",
+        },
+        { role: "system", content: SYSTEM },
+        {
+          role: "user",
+          content: `Analyze this business from the following scraped signals.\n\n${JSON.stringify(
+            signals,
+          ).slice(0, 60000)}`,
+        },
+      ],
+      tools: [{ type: "function", function: SCHEMA }],
+      tool_choice: { type: "function", function: { name: SCHEMA.name } },
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`AI gateway failed [${res.status}]: ${body}`);
+    if (res.status === 429)
+      throw new Error("Rate limit reached. Please try again in a moment.");
+    if (res.status === 402)
+      throw new Error("AI credits exhausted. Add credits to continue.");
+    throw new Error(`Analysis failed [${res.status}]`);
+  }
+
+  const data = (await res.json()) as {
+    choices?: {
+      message?: {
+        tool_calls?: { function?: { arguments?: string } }[];
+        content?: string;
+      };
+    }[];
+  };
+  const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+  if (!args) throw new Error("The analysis returned no usable result.");
+
+  let parsed: {
+    business: AnalysisResult["business"];
+    bestPitch: AnalysisResult["bestPitch"];
+    opportunities: Opportunity[];
+    websiteFindings: AnalysisResult["websiteFindings"];
+    contact?: { address?: string; contactPageUrl?: string };
+    pitchStructure?: PitchStructure;
+    unverified?: string[];
+  };
+  try {
+    parsed = JSON.parse(args);
+  } catch {
+    throw new Error("The analysis returned malformed data.");
+  }
+
+  const opportunities = (parsed.opportunities ?? [])
+    .map((o) => ({ ...o, score: Math.max(0, Math.min(100, Math.round(o.score))) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  for (const u of parsed.unverified ?? []) notes.push(u);
+
+  const contact: ContactInfo = {
+    emails: page.emails ?? [],
+    phones: (page.phones ?? []).map((p) => p.replace(/^tel:/i, "").trim()),
+    socials: Array.from(
+      new Map(
+        (page.socialLinks ?? [])
+          .map((href) => {
+            try {
+              return new URL(href, url).toString();
+            } catch {
+              return null;
+            }
+          })
+          .filter((u): u is string => !!u)
+          .map((u) => [u, { platform: platformOf(u), url: u }]),
+      ).values(),
+    ),
+    address: parsed.contact?.address?.trim() || "Not available",
+    contactPageUrl: parsed.contact?.contactPageUrl?.trim() || "Not available",
+  };
+
+  const pitchStructure: PitchStructure = {
+    subjectLine: parsed.pitchStructure?.subjectLine ?? "Not available",
+    opening: parsed.pitchStructure?.opening ?? "Not available",
+    points: (parsed.pitchStructure?.points ?? []).slice(0, 6),
+    callToAction: parsed.pitchStructure?.callToAction ?? "Not available",
+    toneTips: parsed.pitchStructure?.toneTips ?? "Not available",
+  };
+
+  return {
+    url,
+    fetched: page.ok,
+    partial: !page.ok || notes.length > 0,
+    notes: Array.from(new Set(notes)).slice(0, 6),
+    business: parsed.business,
+    contact,
+    pitchStructure,
+    bestPitch: parsed.bestPitch,
+    opportunities,
+    websiteFindings: (parsed.websiteFindings ?? []).slice(0, 8),
+  };
+}
+
