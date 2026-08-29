@@ -146,7 +146,9 @@ end $$;
 
 create or replace function public.consume_lead_search_budget(requested_count integer)
 returns table (allowed boolean, used integer, remaining integer, limit_value integer)
-language plpgsql security invoker set search_path = public
+language plpgsql
+security definer
+set search_path = public
 as $$
 declare
   daily_limit integer := 500;
@@ -178,4 +180,5 @@ begin
 end;
 $$;
 
+revoke all on function public.consume_lead_search_budget(integer) from public;
 grant execute on function public.consume_lead_search_budget(integer) to authenticated;
