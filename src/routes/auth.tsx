@@ -38,6 +38,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
 
   const cooldownSeconds = cooldownUntil
@@ -83,6 +84,7 @@ function AuthPage() {
 
     setBusy(true);
     setError(null);
+    setSuccessMessage(null);
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -94,13 +96,32 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
+
+        setMode("signin");
+        setPassword("");
+        setDisplayName("");
+        setSuccessMessage(
+          "Account created. Please check your email and confirm it before signing in.",
+        );
+        return;
       }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (
+          error.message.toLowerCase().includes("email not confirmed") ||
+          error.message.toLowerCase().includes("confirm your email")
+        ) {
+          setError("Please verify your email before signing in. Check your inbox for the confirmation link.");
+          return;
+        }
+        throw error;
+      }
+
       navigate({ to: "/storage", replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not sign you in.";
@@ -207,6 +228,9 @@ function AuthPage() {
               />
             </div>
 
+            {successMessage && (
+              <p className="text-sm text-emerald-600 dark:text-emerald-400">{successMessage}</p>
+            )}
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Button
@@ -228,6 +252,7 @@ function AuthPage() {
             onClick={() => {
               setMode(mode === "signin" ? "signup" : "signin");
               setError(null);
+              setSuccessMessage(null);
             }}
             className="mt-5 w-full text-sm text-muted-foreground hover:text-foreground"
           >
