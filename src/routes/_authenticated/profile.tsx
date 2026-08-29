@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Eye, EyeOff, Loader2, Save, Search, Store, Sparkles, Globe, FolderOpen } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Save, Search, Store, Sparkles, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -136,18 +136,6 @@ function ProfilePage() {
                 <Sparkles className="size-4" />
               </span>
               Train Pitch
-            </Link>
-            <Link to="/gig-creator" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <Sparkles className="size-4" />
-              </span>
-              Gig Creator
-            </Link>
-            <Link to="/ai-browser" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <Globe className="size-4" />
-              </span>
-              AI Browser
             </Link>
             <Link to="/storage" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
               <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">

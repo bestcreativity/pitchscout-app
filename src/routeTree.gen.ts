@@ -13,9 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedAiBrowserRouteImport } from './routes/_authenticated/ai-browser'
 import { Route as AuthenticatedFindLeadsRouteImport } from './routes/_authenticated/find-leads'
-import { Route as AuthenticatedGigCreatorRouteImport } from './routes/_authenticated/gig-creator'
 import { Route as AuthenticatedLeadsStoreRouteImport } from './routes/_authenticated/leads-store'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
@@ -40,19 +38,9 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAiBrowserRoute = AuthenticatedAiBrowserRouteImport.update({
-  id: '/ai-browser',
-  path: '/ai-browser',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedFindLeadsRoute = AuthenticatedFindLeadsRouteImport.update({
   id: '/find-leads',
   path: '/find-leads',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGigCreatorRoute = AuthenticatedGigCreatorRouteImport.update({
-  id: '/gig-creator',
-  path: '/gig-creator',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLeadsStoreRoute = AuthenticatedLeadsStoreRouteImport.update({
@@ -80,9 +68,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/ai-browser': typeof AuthenticatedAiBrowserRoute
   '/find-leads': typeof AuthenticatedFindLeadsRoute
-  '/gig-creator': typeof AuthenticatedGigCreatorRoute
   '/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/storage': typeof AuthenticatedStorageRoute
@@ -92,9 +78,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/ai-browser': typeof AuthenticatedAiBrowserRoute
   '/find-leads': typeof AuthenticatedFindLeadsRoute
-  '/gig-creator': typeof AuthenticatedGigCreatorRoute
   '/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/storage': typeof AuthenticatedStorageRoute
@@ -106,9 +90,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/ai-browser': typeof AuthenticatedAiBrowserRoute
   '/_authenticated/find-leads': typeof AuthenticatedFindLeadsRoute
-  '/_authenticated/gig-creator': typeof AuthenticatedGigCreatorRoute
   '/_authenticated/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
@@ -120,9 +102,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
-    | '/ai-browser'
     | '/find-leads'
-    | '/gig-creator'
     | '/leads-store'
     | '/profile'
     | '/storage'
@@ -132,9 +112,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
-    | '/ai-browser'
     | '/find-leads'
-    | '/gig-creator'
     | '/leads-store'
     | '/profile'
     | '/storage'
@@ -145,9 +123,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
-    | '/_authenticated/ai-browser'
     | '/_authenticated/find-leads'
-    | '/_authenticated/gig-creator'
     | '/_authenticated/leads-store'
     | '/_authenticated/profile'
     | '/_authenticated/storage'
@@ -190,25 +166,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/ai-browser': {
-      id: '/_authenticated/ai-browser'
-      path: '/ai-browser'
-      fullPath: '/ai-browser'
-      preLoaderRoute: typeof AuthenticatedAiBrowserRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/find-leads': {
       id: '/_authenticated/find-leads'
       path: '/find-leads'
       fullPath: '/find-leads'
       preLoaderRoute: typeof AuthenticatedFindLeadsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/gig-creator': {
-      id: '/_authenticated/gig-creator'
-      path: '/gig-creator'
-      fullPath: '/gig-creator'
-      preLoaderRoute: typeof AuthenticatedGigCreatorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/leads-store': {
@@ -244,9 +206,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedAiBrowserRoute: typeof AuthenticatedAiBrowserRoute
   AuthenticatedFindLeadsRoute: typeof AuthenticatedFindLeadsRoute
-  AuthenticatedGigCreatorRoute: typeof AuthenticatedGigCreatorRoute
   AuthenticatedLeadsStoreRoute: typeof AuthenticatedLeadsStoreRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
@@ -255,9 +215,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedAiBrowserRoute: AuthenticatedAiBrowserRoute,
   AuthenticatedFindLeadsRoute: AuthenticatedFindLeadsRoute,
-  AuthenticatedGigCreatorRoute: AuthenticatedGigCreatorRoute,
   AuthenticatedLeadsStoreRoute: AuthenticatedLeadsStoreRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
