@@ -19,6 +19,7 @@ export const generateFollowUpMessage = createServerFn({ method: "POST" })
       .from("researches")
       .select("url, business_name, best_pitch_title, result")
       .eq("id", data.id)
+      .eq("user_id", context.userId)
       .single();
     if (error || !row) throw new Error("Research not found.");
 
@@ -51,7 +52,8 @@ export const generateFollowUpMessage = createServerFn({ method: "POST" })
     const { error: updateError } = await context.supabase
       .from("researches")
       .update({ result: nextResult as never })
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (updateError) throw new Error(updateError.message);
     return message;
   });

@@ -37,6 +37,7 @@ export const listResearches = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("researches")
       .select("id, url, business_name, best_pitch_title, result, created_at")
+      .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -54,7 +55,8 @@ export const updateResearch = createServerFn({ method: "POST" })
         result: data.result as never,
         ...(data.bestPitchTitle ? { best_pitch_title: data.bestPitchTitle } : {}),
       })
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -66,7 +68,8 @@ export const deleteResearch = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("researches")
       .delete()
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
