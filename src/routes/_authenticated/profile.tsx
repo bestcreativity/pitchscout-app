@@ -2,13 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile, updateMyProfile } from "@/lib/profile.functions";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -45,6 +46,12 @@ function ProfilePage() {
 
   const [displayName, setDisplayName] = useState("");
   const [background, setBackground] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordBusy, setPasswordBusy] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!data) return;
@@ -60,6 +67,37 @@ function ProfilePage() {
     },
     onError: () => toast.error("Could not save your background"),
   });
+
+  async function handlePasswordUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(null);
+
+    if (newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match.");
+      return;
+    }
+
+    setPasswordBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+
+      setPasswordSuccess("Password updated successfully.");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not update your password.";
+      setPasswordError(message);
+    } finally {
+      setPasswordBusy(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-background px-5 py-12 sm:px-8">
@@ -138,6 +176,75 @@ function ProfilePage() {
             </Button>
           </form>
         )}
+
+        <form
+          className="mt-8 space-y-6 rounded-3xl border border-border bg-card p-6 sm:p-7"
+          onSubmit={handlePasswordUpdate}
+        >
+          <div>
+            <h2 className="text-xl font-semibold text-foreground">Change password</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Update your password any time while signed in.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="newPassword">New password</Label>
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setShowPassword((value) => !value)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showPassword ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 6 characters"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                onClick={() => setShowPassword((value) => !value)}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm new password</Label>
+            <Input
+              id="confirmPassword"
+              type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Repeat your new password"
+            />
+          </div>
+
+          {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+          {passwordSuccess && (
+            <p className="text-sm text-emerald-600 dark:text-emerald-400">{passwordSuccess}</p>
+          )}
+
+          <Button type="submit" disabled={passwordBusy} className="rounded-2xl">
+            {passwordBusy ? (
+              <>
+                <Loader2 className="animate-spin" /> Updating…
+              </>
+            ) : (
+              "Update password"
+            )}
+          </Button>
+        </form>
       </div>
     </main>
   );

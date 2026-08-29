@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,13 +37,10 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
-
-  const cooldownSeconds = cooldownUntil
-    ? Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000))
-    : 0;
+  const [isResetMode, setIsResetMode] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -51,41 +48,29 @@ function AuthPage() {
     });
   }, [navigate]);
 
-  useEffect(() => {
-    if (!cooldownUntil) return;
-
-    const timer = window.setInterval(() => {
-      if (Date.now() >= cooldownUntil) {
-        setCooldownUntil(null);
-        window.clearInterval(timer);
-      }
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, [cooldownUntil]);
-
-  function handleRateLimitError(message?: string) {
-    const text = message ?? "";
-    if (!text.toLowerCase().includes("for security purposes") && !text.toLowerCase().includes("only request this after")) {
-      return false;
-    }
-
-    setCooldownUntil(Date.now() + 33000);
-    setError("Too many attempts. Please wait 33 seconds before trying again.");
-    return true;
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (cooldownSeconds > 0) {
-      setError(`Too many attempts. Please wait ${cooldownSeconds} seconds before trying again.`);
-      return;
-    }
 
     setBusy(true);
     setError(null);
     setSuccessMessage(null);
     try {
+      if (isResetMode) {
+        if (!email.trim()) {
+          setError("Enter your email address to receive a reset link.");
+          return;
+        }
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/auth`,
+        });
+
+        if (error) throw error;
+
+        setSuccessMessage("Password reset link sent. Check your inbox and follow the instructions.");
+        return;
+      }
+
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
@@ -125,9 +110,6 @@ function AuthPage() {
       navigate({ to: "/storage", replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not sign you in.";
-      if (handleRateLimitError(message)) {
-        return;
-      }
       setError(message);
     } finally {
       setBusy(false);
@@ -135,20 +117,11 @@ function AuthPage() {
   }
 
   async function google() {
-    if (cooldownSeconds > 0) {
-      setError(`Too many attempts. Please wait ${cooldownSeconds} seconds before trying again.`);
-      return;
-    }
-
     setError(null);
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      const message = result.error.message ?? "Google sign-in failed. Try again.";
-      if (handleRateLimitError(message)) {
-        return;
-      }
       setError("Google sign-in failed. Try again.");
       return;
     }
@@ -168,29 +141,34 @@ function AuthPage() {
 
         <div className="mt-6 rounded-3xl border border-border bg-card p-7">
           <h1 className="text-2xl font-semibold text-foreground">
-            {mode === "signin" ? "Sign in" : "Create your account"}
+            {isResetMode ? "Reset password" : mode === "signin" ? "Sign in" : "Create your account"}
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            An account is optional — it only adds private storage for your past
-            research.
+            {isResetMode
+              ? "Enter your email and we will send a secure reset link."
+              : "An account is optional — it only adds private storage for your past research."}
           </p>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-6 h-11 w-full rounded-2xl"
-            onClick={google}
-          >
-            Continue with Google
-          </Button>
+          {!isResetMode && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-6 h-11 w-full rounded-2xl"
+                onClick={google}
+              >
+                Continue with Google
+              </Button>
 
-          <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or{" "}
-            <span className="h-px flex-1 bg-border" />
-          </div>
+              <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
+                <span className="h-px flex-1 bg-border" /> or{" "}
+                <span className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
 
           <form onSubmit={onSubmit} className="space-y-4">
-            {mode === "signup" && (
+            {!isResetMode && mode === "signup" && (
               <div className="space-y-1.5">
                 <Label htmlFor="display-name">Display name</Label>
                 <Input
@@ -213,34 +191,66 @@ function AuthPage() {
                 autoComplete="email"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete={
-                  mode === "signup" ? "new-password" : "current-password"
-                }
-              />
-            </div>
+            {!isResetMode && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowPassword((value) => !value)}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={
+                      mode === "signup" ? "new-password" : "current-password"
+                    }
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowPassword((value) => !value)}
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {successMessage && (
               <p className="text-sm text-emerald-600 dark:text-emerald-400">{successMessage}</p>
             )}
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button
-              type="submit"
-              disabled={busy || cooldownSeconds > 0}
-              className="h-11 w-full rounded-2xl"
-            >
+            {!isResetMode && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsResetMode(true);
+                  setError(null);
+                  setSuccessMessage(null);
+                }}
+                className="w-full text-left text-sm text-muted-foreground hover:text-foreground"
+              >
+                Forgot password?
+              </button>
+            )}
+
+            <Button type="submit" disabled={busy} className="h-11 w-full rounded-2xl">
               {busy && <Loader2 className="animate-spin" />}
-              {cooldownSeconds > 0
-                ? `Wait ${cooldownSeconds}s`
+              {isResetMode
+                ? "Send reset link"
                 : mode === "signin"
                   ? "Sign in"
                   : "Create account"}
@@ -251,14 +261,17 @@ function AuthPage() {
             type="button"
             onClick={() => {
               setMode(mode === "signin" ? "signup" : "signin");
+              setIsResetMode(false);
               setError(null);
               setSuccessMessage(null);
             }}
             className="mt-5 w-full text-sm text-muted-foreground hover:text-foreground"
           >
-            {mode === "signin"
-              ? "No account? Create one"
-              : "Already have an account? Sign in"}
+            {isResetMode
+              ? "Back to sign in"
+              : mode === "signin"
+                ? "No account? Create one"
+                : "Already have an account? Sign in"}
           </button>
         </div>
       </div>
