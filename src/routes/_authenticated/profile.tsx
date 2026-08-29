@@ -119,12 +119,6 @@ function ProfilePage() {
 
         <nav className="mt-8 rounded-3xl border border-border bg-card p-2 shadow-sm">
           <div className="divide-y divide-border">
-            <Link to="/profile" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <Search className="size-4" />
-              </span>
-              Your background
-            </Link>
             <Link to="/find-leads" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
               <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
                 <Search className="size-4" />

@@ -63,7 +63,7 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to="/profile">
-                <Briefcase className="size-4" /> Your background
+                <Briefcase className="size-4" /> Profile
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
