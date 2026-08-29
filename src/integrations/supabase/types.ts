@@ -20,30 +20,39 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_registered: boolean | null
           monthly_limit: number | null
+          monthly_usage_count: number | null
           usage_count: number | null
           usage_limit: number | null
           weekly_limit: number | null
+          weekly_usage_count: number | null
         }
         Insert: {
           background?: string | null
           created_at?: string
           display_name?: string | null
           id: string
+          is_registered?: boolean | null
           monthly_limit?: number | null
+          monthly_usage_count?: number | null
           usage_count?: number | null
           usage_limit?: number | null
           weekly_limit?: number | null
+          weekly_usage_count?: number | null
         }
         Update: {
           background?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_registered?: boolean | null
           monthly_limit?: number | null
+          monthly_usage_count?: number | null
           usage_count?: number | null
           usage_limit?: number | null
           weekly_limit?: number | null
+          weekly_usage_count?: number | null
         }
         Relationships: []
       }

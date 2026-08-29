@@ -28,15 +28,19 @@ export const updateMyProfile = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("profiles").upsert({
-      id: context.userId,
-      ...(data.displayName !== undefined
-        ? { display_name: data.displayName.trim() || null }
-        : {}),
-      ...(data.background !== undefined
-        ? { background: data.background.trim() || null }
-        : {}),
-    });
+    const { error } = await context.supabase.from("profiles").upsert(
+      {
+        id: context.userId,
+        is_registered: true,
+        ...(data.displayName !== undefined
+          ? { display_name: data.displayName.trim() || null }
+          : {}),
+        ...(data.background !== undefined
+          ? { background: data.background.trim() || null }
+          : {}),
+      },
+      { onConflict: "id" },
+    );
     if (error) throw new Error(error.message);
     return { ok: true };
   });

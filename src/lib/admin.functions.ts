@@ -59,14 +59,16 @@ export const setUserUsage = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     const admin = await assertAdmin(context.userId, context.claims.email);
-    const payload: Record<string, number> = {};
+    const payload: Record<string, number | boolean> = { id: data.id, is_registered: true };
     if (typeof data.limit === "number") payload.usage_limit = data.limit;
     if (typeof data.weeklyLimit === "number") payload.weekly_limit = data.weeklyLimit;
     if (typeof data.monthlyLimit === "number") payload.monthly_limit = data.monthlyLimit;
-    if (Object.keys(payload).length === 0) {
+    if (Object.keys(payload).length <= 2) {
       return { ok: true };
     }
-    const { error } = await admin.from("profiles").update(payload as never).eq("id", data.id);
+    const { error } = await admin
+      .from("profiles")
+      .upsert(payload as never, { onConflict: "id" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });

@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowUpRight, Briefcase, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { getStoredLeads, removeStoredLead, type Lead } from "@/lib/leads-storage";
+import { saveResearch } from "@/lib/research.functions";
 
 export const Route = createFileRoute("/_authenticated/leads-store")({
   head: () => ({
@@ -16,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/leads-store")({
 });
 
 function LeadsStorePage() {
+  const save = useServerFn(saveResearch);
   const [leads, setLeads] = useState<Lead[]>([]);
 
   useEffect(() => {
@@ -42,14 +45,10 @@ function LeadsStorePage() {
     };
 
     try {
-      const saved = await fetch("/api/research", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (saved.ok) {
-        setLeads((current) => current.filter((item) => item.id !== lead.id));
-      }
+      await save({ data: payload });
+      setLeads((current) => current.filter((item) => item.id !== lead.id));
+      removeStoredLead(lead.id);
+      refresh();
     } catch {
       window.alert("Could not move this lead to research right now.");
     }
