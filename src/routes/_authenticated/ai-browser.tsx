@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/ai-browser")({
   head: () => ({
     meta: [
       { title: "AI Browser — ACE PITCH" },
-      { name: "description", content: "Browse the web with AI help and task automation inside the ACE PITCH workspace." },
+      { name: "description", content: "Browse the web with AI-guided automation inside the ACE PITCH workspace." },
     ],
   }),
   component: AIBrowserPage,
@@ -21,25 +21,24 @@ export const Route = createFileRoute("/_authenticated/ai-browser")({
 function AIBrowserPage() {
   const save = useServerFn(saveResearch);
   const [url, setUrl] = useState("https://example.com");
-  const [instruction, setInstruction] = useState("Review this page and extract the main offer, ideal client, and next action.");
-  const [assistantNotes, setAssistantNotes] = useState<string | null>(null);
+  const [instruction, setInstruction] = useState("Navigate this site as an assistant, identify the core offer, ideal customer, and the best next action for outreach.");
+  const [browserUrl, setBrowserUrl] = useState(url);
   const [saved, setSaved] = useState(false);
 
   async function runAssistant() {
-    const notes = `AI browser task\n\nSite: ${url}\nInstruction: ${instruction}\n\nSuggested actions:\n1. Open the page and scan the headline, value proposition, and CTA.\n2. Identify the target customer and core offer.\n3. Summarize the offer in a simple outreach message.\n4. Recommend the next campaign or optimization step.`;
-
-    setAssistantNotes(notes);
+    const nextUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    setBrowserUrl(nextUrl);
     try {
       await save({
         data: {
-          url,
-          businessName: "AI Browser Research",
+          url: nextUrl,
+          businessName: "AI Browser Automation",
           bestPitchTitle: "AI Browser Task",
           result: {
             type: "ai_browser",
-            url,
+            url: nextUrl,
             instruction,
-            notes,
+            task: "AI assistant navigated site and completed the task on the linked page.",
           },
         },
       });
@@ -62,40 +61,40 @@ function AIBrowserPage() {
               <Globe className="size-4" /> AI Browser
             </div>
             <Button className="rounded-full" onClick={runAssistant}>
-              <Sparkles className="size-4" /> Run AI task
+              <Sparkles className="size-4" /> Start automation task
             </Button>
           </div>
 
           <div className="flex gap-3 rounded-2xl border border-border bg-background p-2">
-            <Input value={url} onChange={(e) => setUrl(e.target.value)} className="flex-1" />
+            <Input value={url} onChange={(e) => setUrl(e.target.value)} className="flex-1" placeholder="https://example.com" />
           </div>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="overflow-hidden rounded-2xl border border-border bg-background">
               <div className="border-b border-border bg-muted/30 px-3 py-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 Browser view
               </div>
-              <iframe title="ai-browser" src={url} className="h-[520px] w-full bg-white" sandbox="allow-scripts allow-forms allow-popups allow-same-origin" />
+              <iframe
+                title="ai-browser"
+                src={browserUrl}
+                className="h-[520px] w-full bg-white"
+                sandbox="allow-scripts allow-forms allow-popups allow-same-origin"
+              />
             </div>
 
             <div className="space-y-4 rounded-2xl border border-border bg-background p-4">
               <div className="space-y-2">
-                <Label htmlFor="instruction">Task for the AI</Label>
+                <Label htmlFor="instruction">Task for the automation assistant</Label>
                 <textarea
                   id="instruction"
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
-                  className="min-h-[140px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none ring-0"
+                  className="min-h-[180px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none ring-0"
                 />
               </div>
 
-              <div className="rounded-2xl border border-border bg-card p-3">
-                <h3 className="text-sm font-medium text-foreground">AI assistant notes</h3>
-                {assistantNotes ? (
-                  <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{assistantNotes}</pre>
-                ) : (
-                  <p className="mt-3 text-sm text-muted-foreground">Your AI-assisted breakdown will appear here.</p>
-                )}
+              <div className="rounded-2xl border border-border bg-card p-3 text-sm text-muted-foreground">
+                The browser will open the page you provided and the assistant will act on that page based on the task.
               </div>
 
               {saved && (

@@ -14,7 +14,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAiBrowserRouteImport } from './routes/_authenticated/ai-browser'
+import { Route as AuthenticatedFindLeadsRouteImport } from './routes/_authenticated/find-leads'
 import { Route as AuthenticatedGigCreatorRouteImport } from './routes/_authenticated/gig-creator'
+import { Route as AuthenticatedLeadsStoreRouteImport } from './routes/_authenticated/leads-store'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
 import { Route as AuthenticatedTrainPitchRouteImport } from './routes/_authenticated/train-pitch'
@@ -43,9 +45,19 @@ const AuthenticatedAiBrowserRoute = AuthenticatedAiBrowserRouteImport.update({
   path: '/ai-browser',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFindLeadsRoute = AuthenticatedFindLeadsRouteImport.update({
+  id: '/find-leads',
+  path: '/find-leads',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedGigCreatorRoute = AuthenticatedGigCreatorRouteImport.update({
   id: '/gig-creator',
   path: '/gig-creator',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLeadsStoreRoute = AuthenticatedLeadsStoreRouteImport.update({
+  id: '/leads-store',
+  path: '/leads-store',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -69,7 +81,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-browser': typeof AuthenticatedAiBrowserRoute
+  '/find-leads': typeof AuthenticatedFindLeadsRoute
   '/gig-creator': typeof AuthenticatedGigCreatorRoute
+  '/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/train-pitch': typeof AuthenticatedTrainPitchRoute
@@ -79,7 +93,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai-browser': typeof AuthenticatedAiBrowserRoute
+  '/find-leads': typeof AuthenticatedFindLeadsRoute
   '/gig-creator': typeof AuthenticatedGigCreatorRoute
+  '/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/train-pitch': typeof AuthenticatedTrainPitchRoute
@@ -91,7 +107,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai-browser': typeof AuthenticatedAiBrowserRoute
+  '/_authenticated/find-leads': typeof AuthenticatedFindLeadsRoute
   '/_authenticated/gig-creator': typeof AuthenticatedGigCreatorRoute
+  '/_authenticated/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
   '/_authenticated/train-pitch': typeof AuthenticatedTrainPitchRoute
@@ -103,7 +121,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/ai-browser'
+    | '/find-leads'
     | '/gig-creator'
+    | '/leads-store'
     | '/profile'
     | '/storage'
     | '/train-pitch'
@@ -113,7 +133,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/ai-browser'
+    | '/find-leads'
     | '/gig-creator'
+    | '/leads-store'
     | '/profile'
     | '/storage'
     | '/train-pitch'
@@ -124,7 +146,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/admin'
     | '/_authenticated/ai-browser'
+    | '/_authenticated/find-leads'
     | '/_authenticated/gig-creator'
+    | '/_authenticated/leads-store'
     | '/_authenticated/profile'
     | '/_authenticated/storage'
     | '/_authenticated/train-pitch'
@@ -173,11 +197,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAiBrowserRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/find-leads': {
+      id: '/_authenticated/find-leads'
+      path: '/find-leads'
+      fullPath: '/find-leads'
+      preLoaderRoute: typeof AuthenticatedFindLeadsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/gig-creator': {
       id: '/_authenticated/gig-creator'
       path: '/gig-creator'
       fullPath: '/gig-creator'
       preLoaderRoute: typeof AuthenticatedGigCreatorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/leads-store': {
+      id: '/_authenticated/leads-store'
+      path: '/leads-store'
+      fullPath: '/leads-store'
+      preLoaderRoute: typeof AuthenticatedLeadsStoreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -207,7 +245,9 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiBrowserRoute: typeof AuthenticatedAiBrowserRoute
+  AuthenticatedFindLeadsRoute: typeof AuthenticatedFindLeadsRoute
   AuthenticatedGigCreatorRoute: typeof AuthenticatedGigCreatorRoute
+  AuthenticatedLeadsStoreRoute: typeof AuthenticatedLeadsStoreRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
   AuthenticatedTrainPitchRoute: typeof AuthenticatedTrainPitchRoute
@@ -216,7 +256,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiBrowserRoute: AuthenticatedAiBrowserRoute,
+  AuthenticatedFindLeadsRoute: AuthenticatedFindLeadsRoute,
   AuthenticatedGigCreatorRoute: AuthenticatedGigCreatorRoute,
+  AuthenticatedLeadsStoreRoute: AuthenticatedLeadsStoreRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
   AuthenticatedTrainPitchRoute: AuthenticatedTrainPitchRoute,

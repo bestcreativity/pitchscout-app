@@ -3,12 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase,
   FolderOpen,
-  Globe,
-  LayoutGrid,
   LogOut,
-  MessageSquareText,
   Shield,
-  Sparkles,
   User,
 } from "lucide-react";
 
@@ -46,35 +42,9 @@ export function AppHeader() {
 
   return (
     <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-5 pt-6 sm:px-8">
-      <div className="flex items-center gap-3">
-        <Link to="/" className="text-sm font-semibold tracking-widest text-muted-foreground">
-          ACE PITCH
-        </Link>
-        {user && (
-          <nav className="hidden items-center gap-2 md:flex">
-            <Button asChild variant="ghost" size="sm" className="rounded-full h-8 px-3">
-              <Link to="/">
-                <LayoutGrid className="size-3.5" /> Main
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm" className="rounded-full h-8 px-3">
-              <Link to="/train-pitch">
-                <MessageSquareText className="size-3.5" /> Train Pitch
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm" className="rounded-full h-8 px-3">
-              <Link to="/gig-creator">
-                <Sparkles className="size-3.5" /> Gig Creator
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm" className="rounded-full h-8 px-3">
-              <Link to="/ai-browser">
-                <Globe className="size-3.5" /> AI Browser
-              </Link>
-            </Button>
-          </nav>
-        )}
-      </div>
+      <Link to="/" className="text-sm font-semibold tracking-widest text-muted-foreground">
+        ACE PITCH
+      </Link>
 
       {loading ? (
         <div className="h-9 w-24" />
@@ -90,27 +60,6 @@ export function AppHeader() {
             <DropdownMenuLabel className="truncate font-normal text-muted-foreground">
               {user.email}
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/">
-                <LayoutGrid className="size-4" /> Main page
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/train-pitch">
-                <MessageSquareText className="size-4" /> Train Pitch
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/gig-creator">
-                <Sparkles className="size-4" /> Gig Creator
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/ai-browser">
-                <Globe className="size-4" /> AI Browser
-              </Link>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to="/profile">

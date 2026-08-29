@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Eye, EyeOff, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Save, Search, Store, Sparkles, Globe, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -116,6 +116,39 @@ function ProfilePage() {
           ACE PITCH uses this to pick pitches you can actually deliver for each
           business.
         </p>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <Link to="/find-leads" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
+            <Search className="size-5 text-primary" />
+            <h2 className="mt-4 text-lg font-semibold text-foreground">Find Leads</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Search by service, location and lead type, then generate targeted lead lists.</p>
+          </Link>
+          <Link to="/leads-store" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
+            <Store className="size-5 text-primary" />
+            <h2 className="mt-4 text-lg font-semibold text-foreground">Leads Store</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Review all saved leads and move them into research one by one.</p>
+          </Link>
+          <Link to="/train-pitch" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
+            <Sparkles className="size-5 text-primary" />
+            <h2 className="mt-4 text-lg font-semibold text-foreground">Train Pitch</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Train the AI to shape your pitch message around the right buyer and offer.</p>
+          </Link>
+          <Link to="/gig-creator" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
+            <Sparkles className="size-5 text-primary" />
+            <h2 className="mt-4 text-lg font-semibold text-foreground">Gig Creator</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Turn one keyword into a full premium Fiverr-style gig blueprint.</p>
+          </Link>
+          <Link to="/ai-browser" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
+            <Globe className="size-5 text-primary" />
+            <h2 className="mt-4 text-lg font-semibold text-foreground">AI Browser</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Give the browser a task and let the automation assistant navigate the target site.</p>
+          </Link>
+          <Link to="/storage" className="rounded-3xl border border-border bg-card p-5 transition hover:border-primary/40 hover:bg-accent/30">
+            <FolderOpen className="size-5 text-primary" />
+            <h2 className="mt-4 text-lg font-semibold text-foreground">Saved Research</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Review all of your saved research reports and pitch outputs.</p>
+          </Link>
+        </div>
 
         {isLoading ? (
           <p className="mt-10 flex items-center gap-2 text-muted-foreground">
