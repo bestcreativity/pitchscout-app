@@ -100,12 +100,18 @@ function StoragePage() {
         )}
 
         {error && (
-          <p className="mt-10 text-destructive">
-            Could not load your saved research.
-          </p>
+          <div className="mt-10 rounded-3xl border border-border bg-card p-8 text-center">
+            <p className="font-medium text-foreground">Nothing saved yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Run an analysis and it will appear here automatically.
+            </p>
+            <Button asChild className="mt-5 rounded-full">
+              <Link to="/">Analyze a business</Link>
+            </Button>
+          </div>
         )}
 
-        {data && data.length === 0 && (
+        {data && data.length === 0 && !error && (
           <div className="mt-10 rounded-3xl border border-border bg-card p-8 text-center">
             <p className="font-medium text-foreground">Nothing saved yet</p>
             <p className="mt-1 text-sm text-muted-foreground">

@@ -22,18 +22,51 @@ export const listUsers = createServerFn({ method: "GET" })
     const { data, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
     if (error) throw new Error(error.message);
     return Promise.all((data.users ?? []).map(async (user) => {
-      const { data: profile } = await admin.from("profiles").select("usage_count, usage_limit").eq("id", user.id).maybeSingle();
-      const row = profile as { usage_count?: number; usage_limit?: number } | null;
-      return { id: user.id, email: user.email ?? "Not available", createdAt: user.created_at, usageCount: row?.usage_count ?? 0, usageLimit: row?.usage_limit ?? 5 };
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("usage_count, usage_limit, weekly_limit, monthly_limit")
+        .eq("id", user.id)
+        .maybeSingle();
+      const row = profile as {
+        usage_count?: number;
+        usage_limit?: number;
+        weekly_limit?: number;
+        monthly_limit?: number;
+      } | null;
+      return {
+        id: user.id,
+        email: user.email ?? "Not available",
+        createdAt: user.created_at,
+        usageCount: row?.usage_count ?? 0,
+        usageLimit: row?.usage_limit ?? 5,
+        weeklyLimit: row?.weekly_limit ?? 5,
+        monthlyLimit: row?.monthly_limit ?? 20,
+      };
     }));
   });
 
 export const setUserUsage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ id: z.string().uuid(), limit: z.number().int().min(0).max(10000) }).parse(data))
+  .inputValidator((data) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        limit: z.number().int().min(0).max(10000).optional(),
+        weeklyLimit: z.number().int().min(0).max(10000).optional(),
+        monthlyLimit: z.number().int().min(0).max(10000).optional(),
+      })
+      .parse(data),
+  )
   .handler(async ({ context, data }) => {
     const admin = await assertAdmin(context.userId, context.claims.email);
-    const { error } = await admin.from("profiles").update({ usage_limit: data.limit } as never).eq("id", data.id);
+    const payload: Record<string, number> = {};
+    if (typeof data.limit === "number") payload.usage_limit = data.limit;
+    if (typeof data.weeklyLimit === "number") payload.weekly_limit = data.weeklyLimit;
+    if (typeof data.monthlyLimit === "number") payload.monthly_limit = data.monthlyLimit;
+    if (Object.keys(payload).length === 0) {
+      return { ok: true };
+    }
+    const { error } = await admin.from("profiles").update(payload as never).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

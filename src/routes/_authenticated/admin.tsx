@@ -60,6 +60,8 @@ interface User {
   createdAt: string;
   usageCount: number;
   usageLimit: number;
+  weeklyLimit: number;
+  monthlyLimit: number;
 }
 
 function AdminDashboard() {
@@ -70,6 +72,8 @@ function AdminDashboard() {
 
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newLimit, setNewLimit] = useState<string>("");
+  const [weeklyLimit, setWeeklyLimit] = useState<string>("");
+  const [monthlyLimit, setMonthlyLimit] = useState<string>("");
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<User | null>(null);
 
   const { data: users = [], isLoading, error } = useQuery({
@@ -78,12 +82,18 @@ function AdminDashboard() {
   });
 
   const setUsageMutation = useMutation({
-    mutationFn: (data: { id: string; limit: number }) =>
-      setUsageServerFn({ data }),
+    mutationFn: (data: {
+      id: string;
+      limit?: number;
+      weeklyLimit?: number;
+      monthlyLimit?: number;
+    }) => setUsageServerFn({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setEditingUser(null);
       setNewLimit("");
+      setWeeklyLimit("");
+      setMonthlyLimit("");
     },
   });
 
@@ -96,13 +106,27 @@ function AdminDashboard() {
   });
 
   const handleSaveUsage = () => {
-    if (!editingUser || !newLimit) return;
-    const limit = parseInt(newLimit, 10);
-    if (isNaN(limit) || limit < 0) {
-      window.alert("Please enter a valid number");
+    if (!editingUser) return;
+
+    const limit = newLimit.trim() === "" ? undefined : parseInt(newLimit, 10);
+    const weekly = weeklyLimit.trim() === "" ? undefined : parseInt(weeklyLimit, 10);
+    const monthly = monthlyLimit.trim() === "" ? undefined : parseInt(monthlyLimit, 10);
+
+    if (
+      (limit !== undefined && (isNaN(limit) || limit < 0)) ||
+      (weekly !== undefined && (isNaN(weekly) || weekly < 0)) ||
+      (monthly !== undefined && (isNaN(monthly) || monthly < 0))
+    ) {
+      window.alert("Please enter valid non-negative numbers for all limits.");
       return;
     }
-    setUsageMutation.mutate({ id: editingUser.id, limit });
+
+    setUsageMutation.mutate({
+      id: editingUser.id,
+      ...(limit !== undefined ? { limit } : {}),
+      ...(weekly !== undefined ? { weeklyLimit: weekly } : {}),
+      ...(monthly !== undefined ? { monthlyLimit: monthly } : {}),
+    });
   };
 
   const handleDeleteUser = () => {
@@ -156,13 +180,14 @@ function AdminDashboard() {
                   <TableHead>Email</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead className="text-right">Usage / Limit</TableHead>
+                  <TableHead className="text-right">Week / Month</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -178,6 +203,10 @@ function AdminDashboard() {
                           {user.usageCount} / {user.usageLimit}
                         </span>
                       </TableCell>
+                      <TableCell className="text-right text-sm text-muted-foreground">
+                        <div>{user.weeklyLimit} / week</div>
+                        <div>{user.monthlyLimit} / month</div>
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
@@ -186,6 +215,8 @@ function AdminDashboard() {
                             onClick={() => {
                               setEditingUser(user);
                               setNewLimit(user.usageLimit.toString());
+                              setWeeklyLimit(user.weeklyLimit.toString());
+                              setMonthlyLimit(user.monthlyLimit.toString());
                             }}
                           >
                             <Edit2 className="size-4" />
@@ -223,7 +254,7 @@ function AdminDashboard() {
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="new-limit">New Limit</Label>
+              <Label htmlFor="new-limit">Default analysis limit</Label>
               <Input
                 id="new-limit"
                 type="number"
@@ -231,12 +262,36 @@ function AdminDashboard() {
                 max="10000"
                 value={newLimit}
                 onChange={(e) => setNewLimit(e.target.value)}
-                placeholder="Enter new limit"
+                placeholder="Enter default limit"
               />
-              <p className="mt-2 text-xs text-muted-foreground">
-                Current usage: {editingUser?.usageCount} / {editingUser?.usageLimit}
-              </p>
             </div>
+            <div>
+              <Label htmlFor="weekly-limit">Weekly limit</Label>
+              <Input
+                id="weekly-limit"
+                type="number"
+                min="0"
+                max="10000"
+                value={weeklyLimit}
+                onChange={(e) => setWeeklyLimit(e.target.value)}
+                placeholder="Enter weekly limit"
+              />
+            </div>
+            <div>
+              <Label htmlFor="monthly-limit">Monthly limit</Label>
+              <Input
+                id="monthly-limit"
+                type="number"
+                min="0"
+                max="10000"
+                value={monthlyLimit}
+                onChange={(e) => setMonthlyLimit(e.target.value)}
+                placeholder="Enter monthly limit"
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Current usage: {editingUser?.usageCount} / {editingUser?.usageLimit}
+            </p>
           </div>
 
           <DialogFooter>

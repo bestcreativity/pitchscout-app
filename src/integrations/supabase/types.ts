@@ -20,18 +20,30 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          monthly_limit: number | null
+          usage_count: number | null
+          usage_limit: number | null
+          weekly_limit: number | null
         }
         Insert: {
           background?: string | null
           created_at?: string
           display_name?: string | null
           id: string
+          monthly_limit?: number | null
+          usage_count?: number | null
+          usage_limit?: number | null
+          weekly_limit?: number | null
         }
         Update: {
           background?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          monthly_limit?: number | null
+          usage_count?: number | null
+          usage_limit?: number | null
+          weekly_limit?: number | null
         }
         Relationships: []
       }

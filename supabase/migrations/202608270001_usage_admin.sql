@@ -1,11 +1,21 @@
 alter table public.profiles
   add column if not exists usage_count integer not null default 0,
   add column if not exists usage_limit integer not null default 5,
+  add column if not exists weekly_limit integer not null default 5,
+  add column if not exists monthly_limit integer not null default 20,
   add column if not exists is_registered boolean not null default false;
 
 update public.profiles
 set usage_limit = 5
 where usage_limit is null or usage_limit < 5;
+
+update public.profiles
+set weekly_limit = 5
+where weekly_limit is null or weekly_limit < 5;
+
+update public.profiles
+set monthly_limit = 20
+where monthly_limit is null or monthly_limit < 20;
 
 -- Update is_registered to true for all existing profiles
 update public.profiles

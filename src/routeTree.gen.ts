@@ -13,8 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAiBrowserRouteImport } from './routes/_authenticated/ai-browser'
+import { Route as AuthenticatedGigCreatorRouteImport } from './routes/_authenticated/gig-creator'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
+import { Route as AuthenticatedTrainPitchRouteImport } from './routes/_authenticated/train-pitch'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -35,6 +38,16 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAiBrowserRoute = AuthenticatedAiBrowserRouteImport.update({
+  id: '/ai-browser',
+  path: '/ai-browser',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGigCreatorRoute = AuthenticatedGigCreatorRouteImport.update({
+  id: '/gig-creator',
+  path: '/gig-creator',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -45,20 +58,31 @@ const AuthenticatedStorageRoute = AuthenticatedStorageRouteImport.update({
   path: '/storage',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTrainPitchRoute = AuthenticatedTrainPitchRouteImport.update({
+  id: '/train-pitch',
+  path: '/train-pitch',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/ai-browser': typeof AuthenticatedAiBrowserRoute
+  '/gig-creator': typeof AuthenticatedGigCreatorRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/storage': typeof AuthenticatedStorageRoute
+  '/train-pitch': typeof AuthenticatedTrainPitchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/ai-browser': typeof AuthenticatedAiBrowserRoute
+  '/gig-creator': typeof AuthenticatedGigCreatorRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/storage': typeof AuthenticatedStorageRoute
+  '/train-pitch': typeof AuthenticatedTrainPitchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -66,22 +90,44 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/ai-browser': typeof AuthenticatedAiBrowserRoute
+  '/_authenticated/gig-creator': typeof AuthenticatedGigCreatorRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
+  '/_authenticated/train-pitch': typeof AuthenticatedTrainPitchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/profile' | '/storage'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/ai-browser'
+    | '/gig-creator'
+    | '/profile'
+    | '/storage'
+    | '/train-pitch'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/profile' | '/storage'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/ai-browser'
+    | '/gig-creator'
+    | '/profile'
+    | '/storage'
+    | '/train-pitch'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
+    | '/_authenticated/ai-browser'
+    | '/_authenticated/gig-creator'
     | '/_authenticated/profile'
     | '/_authenticated/storage'
+    | '/_authenticated/train-pitch'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -120,6 +166,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ai-browser': {
+      id: '/_authenticated/ai-browser'
+      path: '/ai-browser'
+      fullPath: '/ai-browser'
+      preLoaderRoute: typeof AuthenticatedAiBrowserRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gig-creator': {
+      id: '/_authenticated/gig-creator'
+      path: '/gig-creator'
+      fullPath: '/gig-creator'
+      preLoaderRoute: typeof AuthenticatedGigCreatorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -134,19 +194,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStorageRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/train-pitch': {
+      id: '/_authenticated/train-pitch'
+      path: '/train-pitch'
+      fullPath: '/train-pitch'
+      preLoaderRoute: typeof AuthenticatedTrainPitchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAiBrowserRoute: typeof AuthenticatedAiBrowserRoute
+  AuthenticatedGigCreatorRoute: typeof AuthenticatedGigCreatorRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
+  AuthenticatedTrainPitchRoute: typeof AuthenticatedTrainPitchRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAiBrowserRoute: AuthenticatedAiBrowserRoute,
+  AuthenticatedGigCreatorRoute: AuthenticatedGigCreatorRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
+  AuthenticatedTrainPitchRoute: AuthenticatedTrainPitchRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

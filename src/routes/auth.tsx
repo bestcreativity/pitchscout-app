@@ -44,7 +44,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/storage", replace: true });
+      if (data.session) navigate({ to: "/", replace: true });
     });
   }, [navigate]);
 
@@ -98,7 +98,7 @@ function AuthPage() {
         throw error;
       }
 
-      navigate({ to: "/storage", replace: true });
+      navigate({ to: "/", replace: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not sign you in.";
       setError(message);
@@ -117,7 +117,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/storage", replace: true });
+    navigate({ to: "/", replace: true });
   }
 
   return (
