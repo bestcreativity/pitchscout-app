@@ -85,9 +85,7 @@ function AuthPage() {
         setMode("signin");
         setPassword("");
         setDisplayName("");
-        setSuccessMessage(
-          "Account created. Please check your email and confirm it before signing in.",
-        );
+        setSuccessMessage("Account created. You can sign in now.");
         return;
       }
 
@@ -97,13 +95,6 @@ function AuthPage() {
       });
 
       if (error) {
-        if (
-          error.message.toLowerCase().includes("email not confirmed") ||
-          error.message.toLowerCase().includes("confirm your email")
-        ) {
-          setError("Please verify your email before signing in. Check your inbox for the confirmation link.");
-          return;
-        }
         throw error;
       }
 
