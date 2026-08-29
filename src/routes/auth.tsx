@@ -38,6 +38,11 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+
+  const cooldownSeconds = cooldownUntil
+    ? Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000))
+    : 0;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -45,8 +50,37 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  useEffect(() => {
+    if (!cooldownUntil) return;
+
+    const timer = window.setInterval(() => {
+      if (Date.now() >= cooldownUntil) {
+        setCooldownUntil(null);
+        window.clearInterval(timer);
+      }
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [cooldownUntil]);
+
+  function handleRateLimitError(message?: string) {
+    const text = message ?? "";
+    if (!text.toLowerCase().includes("for security purposes") && !text.toLowerCase().includes("only request this after")) {
+      return false;
+    }
+
+    setCooldownUntil(Date.now() + 33000);
+    setError("Too many attempts. Please wait 33 seconds before trying again.");
+    return true;
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (cooldownSeconds > 0) {
+      setError(`Too many attempts. Please wait ${cooldownSeconds} seconds before trying again.`);
+      return;
+    }
+
     setBusy(true);
     setError(null);
     try {
@@ -69,18 +103,31 @@ function AuthPage() {
       }
       navigate({ to: "/storage", replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not sign you in.");
+      const message = err instanceof Error ? err.message : "Could not sign you in.";
+      if (handleRateLimitError(message)) {
+        return;
+      }
+      setError(message);
     } finally {
       setBusy(false);
     }
   }
 
   async function google() {
+    if (cooldownSeconds > 0) {
+      setError(`Too many attempts. Please wait ${cooldownSeconds} seconds before trying again.`);
+      return;
+    }
+
     setError(null);
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
+      const message = result.error.message ?? "Google sign-in failed. Try again.";
+      if (handleRateLimitError(message)) {
+        return;
+      }
       setError("Google sign-in failed. Try again.");
       return;
     }
@@ -164,11 +211,15 @@ function AuthPage() {
 
             <Button
               type="submit"
-              disabled={busy}
+              disabled={busy || cooldownSeconds > 0}
               className="h-11 w-full rounded-2xl"
             >
               {busy && <Loader2 className="animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {cooldownSeconds > 0
+                ? `Wait ${cooldownSeconds}s`
+                : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
             </Button>
           </form>
 

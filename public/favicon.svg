@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ACE PITCH favicon">
+  <rect width="512" height="512" fill="#f4f4f4"/>
+  <g transform="translate(0 18)">
+    <path fill="#0b2d82" d="M256 48 L370 170 L314 170 L256 113 L198 170 L142 170 Z"/>
+    <path fill="#0b2d82" d="M256 48 L389 200 C427 239 430 287 391 323 C353 359 296 352 256 330 C216 352 159 359 121 323 C82 287 85 239 123 200 L256 48 Z" opacity="0.96"/>
+    <path fill="#f4f4f4" d="M256 86 L338 198 L289 198 L256 162 L223 198 L174 198 Z"/>
+    <path fill="#f4f4f4" d="M256 104 C299 170 330 207 356 242 C382 277 383 315 350 343 C315 374 287 363 256 336 C225 363 197 374 162 343 C129 315 130 277 156 242 C182 207 213 170 256 104 Z"/>
+    <path fill="#0b2d82" d="M256 204 L314 279 L271 279 L256 258 L241 279 L198 279 Z"/>
+    <path fill="#0b2d82" d="M256 290 L352 399 L160 399 Z"/>
+    <path fill="#f4f4f4" d="M150 116 L187 116 L256 196 L325 116 L362 116 L256 248 Z" opacity="0.92"/>
+    <g fill="#0b2d82" font-family="Arial, Helvetica, sans-serif" font-weight="700">
+      <text x="256" y="240" text-anchor="middle" font-size="170" fill="#f4f4f4" font-weight="800">A</text>
+    </g>
+    <g fill="#0b2d82" font-family="Arial, Helvetica, sans-serif" font-weight="700">
+      <text x="256" y="440" text-anchor="middle" font-size="116">Pitch</text>
+    </g>
+  </g>
+</svg>
