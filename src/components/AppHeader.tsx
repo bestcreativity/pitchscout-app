@@ -4,7 +4,10 @@ import {
   Briefcase,
   FolderOpen,
   LogOut,
+  Search,
   Shield,
+  Sparkles,
+  Store,
   User,
 } from "lucide-react";
 
@@ -64,6 +67,21 @@ export function AppHeader() {
             <DropdownMenuItem asChild>
               <Link to="/profile">
                 <Briefcase className="size-4" /> Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/find-leads">
+                <Search className="size-4" /> Find Leads
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/leads-store">
+                <Store className="size-4" /> Leads Store
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/train-pitch">
+                <Sparkles className="size-4" /> Train Pitch
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
