@@ -56,7 +56,7 @@ function FindLeadsPage() {
       setResults(uniqueCandidates);
       setMessage(
         uniqueCandidates.length
-          ? `Found ${uniqueCandidates.length} high-match leads for ${service} in ${location} via Google Places.`
+          ? `Found ${uniqueCandidates.length} leads for ${service} in ${location} using OpenStreetMap and available enrichment providers.`
           : "No leads matched the current filters. Try a broader service name, city, or source target.",
       );
     } catch (error) {
@@ -118,7 +118,7 @@ function FindLeadsPage() {
 
           <div className="mt-6 flex flex-wrap gap-3">
             <Button onClick={handleGenerate} disabled={loading} className="rounded-full">
-              <Search className="size-4" /> {loading ? "Searching Google Places..." : "Generate leads"}
+              <Search className="size-4" /> {loading ? "Searching providers..." : "Generate leads"}
             </Button>
             {results.length > 0 && (
               <Button variant="outline" onClick={moveAllToStore} className="rounded-full">
