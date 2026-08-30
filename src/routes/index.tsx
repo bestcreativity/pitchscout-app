@@ -175,15 +175,11 @@ function AcePitch() {
               <EmailPasteInput
                 value={url}
                 onChange={(e) => setUrl(e)}
-                placeholder="Paste business website URL or email..."
-                onEmailDetected={(email) => {
-                  // Email detected, you could use this for additional processing
-                  console.log("Email detected:", email);
-                }}
+                placeholder="Paste website URL or social media link..."
               />
             </div>
             <p className="px-4 pb-3 pt-2 text-sm text-muted-foreground">
-              Example: https://examplebusiness.com or contact@example.com
+              Example: https://examplebusiness.com or https://instagram.com/yourbrand
             </p>
             <Button
               type="submit"
