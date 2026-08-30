@@ -15,7 +15,10 @@ type YelpResult = { rating?: number; review_count?: number; categories?: Array<{
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
-  if (!response.ok) throw new Error(`Lead provider request failed (${response.status})`);
+  if (!response.ok) {
+    const details = (await response.text()).slice(0, 240).replace(/\s+/g, " ");
+    throw new Error(`Lead provider request failed (${response.status}) at ${new URL(url).hostname}${details ? `: ${details}` : ""}`);
+  }
   return (await response.json()) as T;
 }
 
@@ -33,13 +36,24 @@ async function findLocation(query: string): Promise<Location> {
 }
 
 async function findBusinesses(location: Location, total: number) {
-  const query = `[out:json][timeout:25];nwr["name"](around:25000,${location.lat},${location.lon});out center tags;`;
-  const result = await fetchJson<{ elements?: Element[] }>("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-    body: new URLSearchParams({ data: query }),
-  });
-  return (result.elements ?? []).slice(0, total * 3);
+  const query = `[out:json][timeout:25];(nwr["name"]["shop"](around:15000,${location.lat},${location.lon});nwr["name"]["amenity"](around:15000,${location.lat},${location.lon});nwr["name"]["office"](around:15000,${location.lat},${location.lon});nwr["name"]["craft"](around:15000,${location.lat},${location.lon}););out center tags;`;
+  const endpoints = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+  ];
+  let lastError: unknown;
+  for (const endpoint of endpoints) {
+    try {
+      const url = new URL(endpoint);
+      url.searchParams.set("data", query);
+      return ((await fetchJson<{ elements?: Element[] }>(url.toString(), {
+        headers: { Accept: "application/json", "User-Agent": "ACE-PITCH lead discovery" },
+      })).elements ?? []).slice(0, total * 3);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("All Overpass servers rejected the request.");
 }
 
 async function foursquareLookup(name: string, location: string): Promise<FoursquareResult | null> {
