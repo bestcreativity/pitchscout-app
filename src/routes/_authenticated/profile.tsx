@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Briefcase, Eye, EyeOff, Loader2, Save, Search, Store, Sparkles, FolderOpen } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -116,41 +116,6 @@ function ProfilePage() {
           ACE PITCH uses this to pick pitches you can actually deliver for each
           business.
         </p>
-
-        <nav className="mt-8 rounded-3xl border border-border bg-card p-2 shadow-sm">
-          <div className="divide-y divide-border">
-            <Link to="/profile" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <Briefcase className="size-4" />
-              </span>
-              Profile
-            </Link>
-            <Link to="/find-leads" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <Search className="size-4" />
-              </span>
-              Find Leads
-            </Link>
-            <Link to="/leads-store" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <Store className="size-4" />
-              </span>
-              Leads Store
-            </Link>
-            <Link to="/train-pitch" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <Sparkles className="size-4" />
-              </span>
-              Train Pitch
-            </Link>
-            <Link to="/storage" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <FolderOpen className="size-4" />
-              </span>
-              Saved research
-            </Link>
-          </div>
-        </nav>
 
         {isLoading ? (
           <p className="mt-10 flex items-center gap-2 text-muted-foreground">
