@@ -4,7 +4,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Lead } from "@/lib/leads-storage";
 
-const BING_MAPS_KEY = process.env.BING_MAPS_KEY;
 const FOURSQUARE_API_KEY = process.env.FOURSQUARE_API_KEY;
 const YELP_API_KEY = process.env.YELP_API_KEY;
 
@@ -41,16 +40,6 @@ async function findBusinesses(location: Location, total: number) {
     body: new URLSearchParams({ data: query }),
   });
   return (result.elements ?? []).slice(0, total * 3);
-}
-
-async function bingLookup(name: string, location: string) {
-  if (!BING_MAPS_KEY) return null;
-  const url = new URL("https://dev.virtualearth.net/REST/v1/Locations");
-  url.searchParams.set("q", `${name}, ${location}`);
-  url.searchParams.set("maxResults", "1");
-  url.searchParams.set("key", BING_MAPS_KEY);
-  const result = await fetchJson<{ resourceSets?: Array<{ resources?: Array<{ point?: { coordinates?: number[] }; address?: { formattedAddress?: string } }> }> }>(url.toString());
-  return result.resourceSets?.[0]?.resources?.[0] ?? null;
 }
 
 async function foursquareLookup(name: string, location: string): Promise<FoursquareResult | null> {
@@ -95,8 +84,7 @@ export const searchPlacesLeads = createServerFn({ method: "POST" })
       const tags = element.tags ?? {};
       const company = tags.name?.trim();
       if (!company) continue;
-      const [bing, foursquare, yelp] = await Promise.all([
-        bingLookup(company, data.location).catch(() => null),
+      const [foursquare, yelp] = await Promise.all([
         foursquareLookup(company, data.location).catch(() => null),
         yelpLookup(company, data.location).catch(() => null),
       ]);
@@ -105,7 +93,7 @@ export const searchPlacesLeads = createServerFn({ method: "POST" })
       const categories = [tags.shop, tags.amenity, tags.office, tags.craft, ...(foursquare?.categories?.map((item) => item.name) ?? []), ...(yelp?.categories?.map((item) => item.title) ?? [])].filter(Boolean) as string[];
       const rating = yelp?.rating ?? foursquare?.rating;
       const matchScore = Math.min(99, Math.max(60, Math.round((rating ?? 3.5) * 18 + (website ? 16 : 0) + (phone ? 8 : 0) + Math.min(categories.length * 3, 12))));
-      const providers = ["OpenStreetMap", BING_MAPS_KEY && "Bing Maps", FOURSQUARE_API_KEY && "Foursquare", YELP_API_KEY && "Yelp"].filter(Boolean) as string[];
+      const providers = ["OpenStreetMap", FOURSQUARE_API_KEY && "Foursquare", YELP_API_KEY && "Yelp"].filter(Boolean) as string[];
 
       leads.push({
         id: `osm-${element.type}-${element.id}`,
@@ -113,7 +101,7 @@ export const searchPlacesLeads = createServerFn({ method: "POST" })
         company,
         role: "Business owner",
         service: data.service,
-        location: bing?.address?.formattedAddress || [tags["addr:housenumber"], tags["addr:street"], tags["addr:city"], tags["addr:postcode"]].filter(Boolean).join(", ") || location.displayName,
+        location: [tags["addr:housenumber"], tags["addr:street"], tags["addr:city"], tags["addr:postcode"]].filter(Boolean).join(", ") || location.displayName,
         source: data.source,
         email: tags.email || tags["contact:email"],
         phone,
@@ -125,7 +113,6 @@ export const searchPlacesLeads = createServerFn({ method: "POST" })
           categories: Array.from(new Set(categories)).slice(0, 8),
           businessStatus: tags["opening_hours"] ? `Hours: ${tags["opening_hours"]}` : undefined,
           placeUrl: `https://www.openstreetmap.org/${element.type}/${element.id}`,
-          overview: bing?.point?.coordinates ? `Verified location: ${bing.point.coordinates.join(", ")}` : undefined,
           matchScore,
           providers,
         },
