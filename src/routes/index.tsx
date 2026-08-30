@@ -75,29 +75,9 @@ function AcePitch() {
   const [researchId, setResearchId] = useState<string | null>(null);
   const [showUsageLimitDialog, setShowUsageLimitDialog] = useState(false);
 
-  function isAllowedInput(value: string) {
-    const trimmed = value.trim();
-    if (!trimmed) return false;
-
-    try {
-      const maybeUrl = new URL(trimmed);
-      return maybeUrl.protocol === "http:" || maybeUrl.protocol === "https:";
-    } catch {
-      const emailPattern = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/;
-      return emailPattern.test(trimmed);
-    }
-  }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = url.trim();
-    if (!trimmed || status === "running") return;
-
-    if (!isAllowedInput(trimmed)) {
-      setError("Enter a valid website URL or email address (for example: https://example.com or contact@example.com)");
-      setStatus("error");
-      return;
-    }
+    if (!url.trim() || status === "running") return;
 
     // Check guest usage limit
     if (!user && guestUsage.hasReachedLimit) {
@@ -195,7 +175,11 @@ function AcePitch() {
               <EmailPasteInput
                 value={url}
                 onChange={(e) => setUrl(e)}
-                placeholder="Paste website URL or contact@example.com"
+                placeholder="Paste business website URL or email..."
+                onEmailDetected={(email) => {
+                  // Email detected, you could use this for additional processing
+                  console.log("Email detected:", email);
+                }}
               />
             </div>
             <p className="px-4 pb-3 pt-2 text-sm text-muted-foreground">
