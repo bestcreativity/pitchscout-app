@@ -1,18 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ACE PITCH favicon">
-  <rect width="512" height="512" fill="#f4f4f4"/>
-  <g transform="translate(0 18)">
-    <path fill="#0b2d82" d="M256 48 L370 170 L314 170 L256 113 L198 170 L142 170 Z"/>
-    <path fill="#0b2d82" d="M256 48 L389 200 C427 239 430 287 391 323 C353 359 296 352 256 330 C216 352 159 359 121 323 C82 287 85 239 123 200 L256 48 Z" opacity="0.96"/>
-    <path fill="#f4f4f4" d="M256 86 L338 198 L289 198 L256 162 L223 198 L174 198 Z"/>
-    <path fill="#f4f4f4" d="M256 104 C299 170 330 207 356 242 C382 277 383 315 350 343 C315 374 287 363 256 336 C225 363 197 374 162 343 C129 315 130 277 156 242 C182 207 213 170 256 104 Z"/>
-    <path fill="#0b2d82" d="M256 204 L314 279 L271 279 L256 258 L241 279 L198 279 Z"/>
-    <path fill="#0b2d82" d="M256 290 L352 399 L160 399 Z"/>
-    <path fill="#f4f4f4" d="M150 116 L187 116 L256 196 L325 116 L362 116 L256 248 Z" opacity="0.92"/>
-    <g fill="#0b2d82" font-family="Arial, Helvetica, sans-serif" font-weight="700">
-      <text x="256" y="240" text-anchor="middle" font-size="170" fill="#f4f4f4" font-weight="800">A</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 600" role="img" aria-label="ACE PITCH logo">
+  <defs>
+    <linearGradient id="aceBlue" x1="0%" x2="100%" y1="0%" y2="0%">
+      <stop offset="0%" stop-color="#0d4f96"/>
+      <stop offset="40%" stop-color="#0d77c5"/>
+      <stop offset="100%" stop-color="#0b5aa8"/>
+    </linearGradient>
+    <linearGradient id="swoosh" x1="0%" x2="100%" y1="0%" y2="0%">
+      <stop offset="0%" stop-color="#0e457d" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#1d9be8" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0c5ea2" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1400" height="600" fill="#f1f1f1"/>
+
+  <g transform="translate(120 110)">
+    <g transform="translate(0 30)">
+      <path d="M220 150 C355 90, 470 102, 566 186 C608 220, 631 251, 648 283 C668 321, 703 325, 733 304 C769 281, 785 246, 760 215 C724 171, 677 157, 620 177 C537 211, 472 205, 387 138 C321 87, 266 63, 208 77 C159 89, 119 123, 98 160 C78 196, 100 239, 144 245 C175 250, 197 234, 215 210 C237 183, 246 171, 220 150 Z" fill="url(#swoosh)" opacity="0.8"/>
+      <path d="M600 75 L660 95 L695 138 L680 198 L615 250 L548 210 L533 148 L551 108 Z" fill="url(#aceBlue)"/>
+      <path d="M545 90 L575 90 L620 146 L563 215 L520 165 Z" fill="#f5f9ff" opacity="0.9"/>
+      <path d="M575 95 L604 95 L654 148 L591 215 L547 162 Z" fill="#dfeaf7" opacity="0.9"/>
+      <path d="M610 95 L640 95 L688 148 L620 215 L575 164 Z" fill="#9ec9ff" opacity="0.8"/>
+      <path d="M592 30 L620 58 L600 95 L540 95 L560 58 Z" fill="#0d4f96"/>
+      <path d="M600 0 L636 70 L606 96 L560 96 L530 70 Z" fill="#0d4f96"/>
+      <path d="M600 10 L614 42 L641 47 L621 67 L628 99 L600 80 L572 99 L579 67 L559 47 L586 42 Z" fill="#f5f9ff"/>
     </g>
-    <g fill="#0b2d82" font-family="Arial, Helvetica, sans-serif" font-weight="700">
-      <text x="256" y="440" text-anchor="middle" font-size="116">Pitch</text>
+
+    <g font-family="'Segoe UI', Arial, sans-serif" font-weight="900" letter-spacing="-12">
+      <text x="0" y="245" font-size="250" fill="url(#aceBlue)">ACE</text>
+      <text x="540" y="245" font-size="250" fill="url(#aceBlue)">PITCH</text>
+    </g>
+
+    <g font-family="'Segoe UI', Arial, sans-serif" font-weight="500" letter-spacing="4">
+      <text x="360" y="350" font-size="56" fill="#0b5aa8" text-anchor="middle">ELEVATE YOUR REACH</text>
     </g>
   </g>
 </svg>
