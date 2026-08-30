@@ -6,7 +6,6 @@ import {
   LogOut,
   Search,
   Shield,
-  Sparkles,
   Store,
   User,
 } from "lucide-react";
@@ -66,7 +65,7 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to="/profile">
-                <Briefcase className="size-4" /> Profile
+                <Briefcase className="size-4" /> Your Background
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
@@ -77,11 +76,6 @@ export function AppHeader() {
             <DropdownMenuItem asChild>
               <Link to="/leads-store">
                 <Store className="size-4" /> Leads Store
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/train-pitch">
-                <Sparkles className="size-4" /> Train Pitch
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>

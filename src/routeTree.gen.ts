@@ -17,7 +17,6 @@ import { Route as AuthenticatedFindLeadsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedLeadsStoreRouteImport } from './routes/_authenticated/leads-store'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
-import { Route as AuthenticatedTrainPitchRouteImport } from './routes/_authenticated/train-pitch'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,11 +57,6 @@ const AuthenticatedStorageRoute = AuthenticatedStorageRouteImport.update({
   path: '/storage',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedTrainPitchRoute = AuthenticatedTrainPitchRouteImport.update({
-  id: '/train-pitch',
-  path: '/train-pitch',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -72,7 +66,6 @@ export interface FileRoutesByFullPath {
   '/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/storage': typeof AuthenticatedStorageRoute
-  '/train-pitch': typeof AuthenticatedTrainPitchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,7 +75,6 @@ export interface FileRoutesByTo {
   '/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/storage': typeof AuthenticatedStorageRoute
-  '/train-pitch': typeof AuthenticatedTrainPitchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,7 +86,6 @@ export interface FileRoutesById {
   '/_authenticated/leads-store': typeof AuthenticatedLeadsStoreRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
-  '/_authenticated/train-pitch': typeof AuthenticatedTrainPitchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -106,7 +97,6 @@ export interface FileRouteTypes {
     | '/leads-store'
     | '/profile'
     | '/storage'
-    | '/train-pitch'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -116,7 +106,6 @@ export interface FileRouteTypes {
     | '/leads-store'
     | '/profile'
     | '/storage'
-    | '/train-pitch'
   id:
     | '__root__'
     | '/'
@@ -127,7 +116,6 @@ export interface FileRouteTypes {
     | '/_authenticated/leads-store'
     | '/_authenticated/profile'
     | '/_authenticated/storage'
-    | '/_authenticated/train-pitch'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -194,13 +182,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStorageRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/train-pitch': {
-      id: '/_authenticated/train-pitch'
-      path: '/train-pitch'
-      fullPath: '/train-pitch'
-      preLoaderRoute: typeof AuthenticatedTrainPitchRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
@@ -210,7 +191,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeadsStoreRoute: typeof AuthenticatedLeadsStoreRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
-  AuthenticatedTrainPitchRoute: typeof AuthenticatedTrainPitchRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -219,7 +199,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeadsStoreRoute: AuthenticatedLeadsStoreRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
-  AuthenticatedTrainPitchRoute: AuthenticatedTrainPitchRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

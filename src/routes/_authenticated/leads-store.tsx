@@ -59,7 +59,7 @@ function LeadsStorePage() {
     <main className="min-h-screen bg-background px-5 py-12 sm:px-8">
       <div className="mx-auto w-full max-w-6xl">
         <Link to="/profile" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-4" /> Back to profile
+          <ArrowLeft className="size-4" /> Back to Your Background
         </Link>
 
         <div className="mt-6 flex items-center justify-between gap-3">

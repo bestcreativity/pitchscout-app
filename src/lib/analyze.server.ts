@@ -112,6 +112,9 @@ type PageSignals = {
 
 async function fetchPage(url: string): Promise<PageSignals> {
   const start = Date.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+
   try {
     const res = await fetch(url, {
       headers: {
@@ -120,6 +123,7 @@ async function fetchPage(url: string): Promise<PageSignals> {
         Accept: "text/html,application/xhtml+xml",
       },
       redirect: "follow",
+      signal: controller.signal,
     });
     const html = await res.text();
     const loadMs = Date.now() - start;
@@ -145,7 +149,7 @@ async function fetchPage(url: string): Promise<PageSignals> {
     const phones = Array.from(
       new Set(html.match(/(?:tel:)([+\d][\d\s().-]{6,})/gi) ?? []),
     ).slice(0, 5);
-    const text = stripHtml(html).slice(0, 14000);
+    const text = stripHtml(html).slice(0, 7000);
 
     return {
       ok: true,
@@ -153,8 +157,8 @@ async function fetchPage(url: string): Promise<PageSignals> {
       title,
       metaDescription,
       text,
-      links: Array.from(new Set(hrefs)).slice(0, 60),
-      socialLinks: Array.from(new Set(social)).slice(0, 12),
+      links: Array.from(new Set(hrefs)).slice(0, 30),
+      socialLinks: Array.from(new Set(social)).slice(0, 10),
       emails,
       phones,
       hasViewport: /name=["']viewport["']/i.test(html),
@@ -168,11 +172,20 @@ async function fetchPage(url: string): Promise<PageSignals> {
       https: url.startsWith("https://"),
     };
   } catch (e) {
+    if (e instanceof Error && e.name === "AbortError") {
+      return {
+        ok: false,
+        error: "Request timed out after 12 seconds",
+        loadMs: Date.now() - start,
+      };
+    }
     return {
       ok: false,
       error: e instanceof Error ? e.message : "Fetch failed",
       loadMs: Date.now() - start,
     };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -190,12 +203,12 @@ async function fetchSubPages(base: string, links: string[]) {
     if (/(about|service|contact|pricing|work|product|shop)/i.test(abs)) {
       candidates.add(abs.split("#")[0] ?? abs);
     }
-    if (candidates.size >= 3) break;
+    if (candidates.size >= 2) break;
   }
   const results = await Promise.all(
     Array.from(candidates).map(async (u) => {
       const p = await fetchPage(u);
-      return { url: u, ok: p.ok, text: p.text?.slice(0, 5000) ?? "" };
+      return { url: u, ok: p.ok, text: p.text?.slice(0, 2500) ?? "" };
     }),
   );
   return results.filter((r) => r.ok && r.text);
@@ -349,31 +362,16 @@ Hard rules:
 - valueLow/valueHigh are rough USD project ranges (indicative, not quotes).
 - Website findings are business-relevant problems, not nitpicks.
 - contact.address / contact.contactPageUrl must come from the signals only ("Not available" otherwise).
-- pitchStructure is the skeleton of the outreach message for bestPitch. It must follow this exact order and tone:
-  1. Personalize
-  2. Greeting
-  3. Acknowledge the business
-  4. Identify a specific opportunity
-  5. Show you understand their business
-  6. Identify the real problem
-  7. Connect the problem to money or time
-  8. Present an opportunity
-  9. Propose a specific solution
-  10. Focus on business outcomes
-  11. Make the solution customized
-  12. Establish credibility
-  13. Reduce perceived risk
-  14. Use a simple CTA
-  15. Keep the message short
-  16. Avoid generic statements
-  17. Avoid criticizing the business
-  18. Don't sound desperate
-  19. Pitch the problem before the service
-  20. Give them a reason to reply
-  21. Focus on their revenue process
-  22. Make the value immediately clear
-  23. Create curiosity
-- Keep it human, specific, non-salesy, and brief. The message should naturally lead with the business problem before the service offer, and it should be tailored to this exact business.
+- pitchStructure is the skeleton of the outreach message for bestPitch. It must follow this exact 4-step structure, with no intro greeting and no generic compliments:
+  1. THE SPECIFIC HOOK: Start directly with a concrete insight about the business (PROSPECT_RESEARCH_INSIGHT). Show evidence from the website, not a generic opener.
+  2. THE GAP/FRICTION: Connect that insight to a real business problem such as lost revenue, manual work, slow operations, or poor conversion.
+  3. THE MATCH (MY SKILL → THEIR VALUE): Pick one highly relevant skill from the SENDER BACKGROUND and connect it to a specific business outcome such as more revenue, 10+ hours saved per week, or faster conversion.
+  4. LOW-FRICTION CTA: End with a permission-based question that invites a short conversation without pressure.
+- Maximum message length: 130 words.
+- Tone: direct, professional, helpful, peer-to-peer.
+- Avoid buzzwords and generic praise.
+- Do not list all of the sender's skills; pick only the single most relevant skill for this prospect.
+- Keep it human, specific, non-salesy, and brief.
 - List in "unverified" anything meaningful you could not confirm.`;
 
 
