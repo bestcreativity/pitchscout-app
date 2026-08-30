@@ -1,0 +1,18 @@
+{
+  "name": "ACE PITCH",
+  "short_name": "ACE PITCH",
+  "description": "Find what you can pitch to any business",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0b2d82",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
