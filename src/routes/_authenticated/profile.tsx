@@ -137,18 +137,7 @@ function ProfilePage() {
               </span>
               Train Pitch
             </Link>
-            <Link to="/storage" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <FolderOpen className="size-4" />
-              </span>
-              Saved research
-            </Link>
-            <Link to="/admin" className="flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-base font-medium text-foreground transition hover:bg-accent/40">
-              <span className="flex size-7 items-center justify-center rounded-full border border-border bg-background text-primary">
-                <Search className="size-4" />
-              </span>
-              Admin Dashboard
-            </Link>
+
           </div>
         </nav>
 
