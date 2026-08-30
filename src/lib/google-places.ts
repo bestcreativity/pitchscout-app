@@ -35,8 +35,16 @@ async function findLocation(query: string): Promise<Location> {
   return { lat: Number(first.lat), lon: Number(first.lon), displayName: first.display_name };
 }
 
-async function findBusinesses(location: Location, total: number) {
-  const query = `[out:json][timeout:25];(nwr["name"]["shop"](around:15000,${location.lat},${location.lon});nwr["name"]["amenity"](around:15000,${location.lat},${location.lon});nwr["name"]["office"](around:15000,${location.lat},${location.lon});nwr["name"]["craft"](around:15000,${location.lat},${location.lon}););out center tags;`;
+async function findBusinesses(location: Location, total: number, serviceHint?: string) {
+  // Build a broader query that captures shops, amenities, offices, and craft businesses
+  // Match by craft type (e.g., craft=plumber) or amenity keywords
+  const query = `[out:json][timeout:30];(
+    nwr["name"]["shop"](around:15000,${location.lat},${location.lon});
+    nwr["name"]["amenity"](around:15000,${location.lat},${location.lon});
+    nwr["name"]["office"](around:15000,${location.lat},${location.lon});
+    nwr["craft"](around:15000,${location.lat},${location.lon});
+  );out center tags;`;
+  
   const endpoints = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
@@ -91,7 +99,7 @@ export const searchPlacesLeads = createServerFn({ method: "POST" })
     if (!budgetResult?.allowed) throw new Error(`Daily lead budget reached. ${budgetResult?.remaining ?? 0} lead slots remain today.`);
 
     const location = await findLocation(data.location);
-    const elements = await findBusinesses(location, data.total);
+    const elements = await findBusinesses(location, data.total, data.service);
     const leads: Lead[] = [];
 
     for (const element of elements) {
