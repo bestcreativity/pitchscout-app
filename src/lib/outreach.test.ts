@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { createOutreachDraft } from "./outreach.ts";
 
-test("createOutreachDraft follows the required four-step outreach structure", () => {
+test("createOutreachDraft follows the preferred paragraph structure", () => {
   const draft = createOutreachDraft("Northstar Studio", {
     title: "lead generation funnel",
     pitchAngle:
@@ -17,15 +17,16 @@ test("createOutreachDraft follows the required four-step outreach structure", ()
   });
 
   assert.match(draft.subject, /Northstar Studio|idea|quick/i);
-  assert.doesNotMatch(draft.message, /^Hi\b/i);
+  assert.match(draft.message, /^Hi\b/i);
+  assert.match(draft.message, /I appreciate|appreciate the work/i);
   assert.match(draft.message, /I noticed|I looked at|I saw/i);
   assert.match(draft.message, /leaking|manual|conversion|missed|revenue|friction|lost/i);
   assert.ok(
-    draft.message.indexOf("I noticed") < draft.message.indexOf("I help"),
-    "The message should hook on the insight before pitching the service.",
+    draft.message.indexOf("I appreciate") < draft.message.indexOf("I noticed"),
+    "The message should appreciate the business before the research insight.",
   );
-  assert.match(draft.message, /I help businesses with|I help with/i);
-  assert.match(draft.message, /Would it be worth|Would a quick chat|Would you be open/i);
+  assert.match(draft.message, /I help businesses improve|I help with|I can help/i);
+  assert.match(draft.message, /Would it be worth|quick 10-minute chat|Would you be open/i);
   assert.doesNotMatch(draft.message, /desperate|game-changer|cutting-edge|synergy|seamless|just checking in/i);
   assert.ok(draft.message.split(/\s+/).length <= 130, "The draft must stay under 130 words.");
 });

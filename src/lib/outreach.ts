@@ -52,11 +52,19 @@ export function createOutreachDraft(
       "That creates friction in the sales process and leads to missed revenue and wasted time.",
   );
   const skill = pickMostRelevantSkill(pitch.solution, pitch.senderBackground);
+  const appreciation = `I appreciate the work ${name} is doing and the value it delivers to its customers.`;
+  const solution = `I help businesses improve this with ${skill.toLowerCase()}.`;
+  const value = "This typically means more qualified leads, faster conversion, and 10+ hours saved each week.";
+  const whyMe = "I’ve focused on this kind of work for businesses with similar issues, so I can keep it practical and low-risk.";
+
+  const paragraphOne = humanize(
+    `Hi ${name === "your business" ? "there" : name}, ${appreciation} ${researchInsight}`,
+  );
+  const paragraphTwo = humanize(`${gap} ${solution} ${value}`);
+  const paragraphThree = humanize(`${whyMe} Would it be worth a quick 10-minute chat to see if this is relevant?`);
 
   const message = capWordCount(
-    humanize(
-      `${researchInsight} ${gap}. I help businesses with ${skill.toLowerCase()}. This typically leads to more qualified leads and saves 10+ hours a week. Would it be worth a quick 10-minute chat to see if this is relevant?`,
-    ),
+    humanize([paragraphOne, paragraphTwo, paragraphThree].join("\n\n")),
   );
 
   return {
