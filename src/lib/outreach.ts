@@ -30,10 +30,15 @@ function pickMostRelevantSkill(solution: string, senderBackground?: string) {
   const source = (senderBackground ?? solution).trim();
   if (!source) return solution.trim();
 
-  const cleaned = source
-    .replace(/^.*?(?:I help businesses with|I help with|I specialize in|I build|I do|I provide)\s+/i, "")
+  let cleaned = source
+    .replace(/^.*?(?:I help businesses with|I help with|I specialize in|I build|I do|I provide|This is the kind of workflow I build|This is the kind of work I build)\s+/i, "")
+    .replace(/^(?:using|with)\s+/i, "")
     .replace(/[.]+$/g, "")
     .trim();
+
+  if (!cleaned || /^this is the kind of/i.test(source)) {
+    cleaned = solution.trim();
+  }
 
   return cleaned || solution.trim();
 }
@@ -43,25 +48,25 @@ export function createOutreachDraft(
   pitch: OutreachPitch,
 ): OutreachDraft {
   const name = businessName === "Not available" ? "your business" : businessName;
+  const greeting = `Hi ${name === "your business" ? "there" : name},`;
+  const appreciation = `I came across your business and liked how clearly you focus on urgent customer needs.`;
   const researchInsight = humanize(
     pitch.prospectResearchInsight?.trim() ||
-      `I noticed ${name} still appears to rely on ${pitch.title.toLowerCase()} in a way that is creating missed conversion opportunities.`,
+      `I looked through your website and noticed customers can request service online, which is useful for after-hours inquiries.`,
   );
-  const gap = humanize(
+  const opportunity = humanize(
     pitch.pitchAngle.trim() ||
-      "That creates friction in the sales process and leads to missed revenue and wasted time.",
+      "That made me think there may be an opportunity to make the emergency-request process more responsive.",
   );
   const skill = pickMostRelevantSkill(pitch.solution, pitch.senderBackground);
-  const appreciation = `I appreciate the work ${name} is doing and the value it delivers to its customers.`;
-  const solution = `I help businesses improve this with ${skill.toLowerCase()}.`;
-  const value = "This typically means more qualified leads, faster conversion, and 10+ hours saved each week.";
-  const whyMe = "I’ve focused on this kind of work for businesses with similar issues, so I can keep it practical and low-risk.";
+  const solution = `I could build ${skill.toLowerCase()} that captures issue details, schedules the request, and alerts the right technician by SMS.`;
+  const value = "The goal would be to make urgent requests easier to handle quickly and improve the customer experience.";
+  const whyMe = "This is the kind of workflow I build using web apps and automation, so I can tailor it around your team.";
+  const cta = "If you're open to it, I can show you what I have in mind in a 10-minute conversation.";
 
-  const paragraphOne = humanize(
-    `Hi ${name === "your business" ? "there" : name}, ${appreciation} ${researchInsight}`,
-  );
-  const paragraphTwo = humanize(`${gap} ${solution} ${value}`);
-  const paragraphThree = humanize(`${whyMe} Would it be worth a quick 10-minute chat to see if this is relevant?`);
+  const paragraphOne = humanize(`${greeting} ${appreciation} ${researchInsight}`);
+  const paragraphTwo = humanize(`${opportunity} ${solution}`);
+  const paragraphThree = humanize(`${value} ${whyMe} ${cta}`);
 
   const message = capWordCount(
     humanize([paragraphOne, paragraphTwo, paragraphThree].join("\n\n")),

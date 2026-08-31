@@ -4,29 +4,26 @@ import assert from "node:assert/strict";
 import { createOutreachDraft } from "./outreach.ts";
 
 test("createOutreachDraft follows the preferred paragraph structure", () => {
-  const draft = createOutreachDraft("Northstar Studio", {
-    title: "lead generation funnel",
+  const draft = createOutreachDraft("Austin's Greatest Plumbing", {
+    title: "emergency intake workflow",
     pitchAngle:
-      "Their booking funnel is leaking leads because they rely on manual follow-up and weak landing page conversion.",
+      "There may be an opportunity to make the emergency request process more responsive for customers who need help quickly.",
     solution:
-      "a conversion-focused lead generation system with better landing pages, CRM automation, and a simple follow-up workflow.",
+      "a streamlined emergency intake system that collects the customer's issue and contact details, schedules the request, and alerts the right technician by SMS.",
     prospectResearchInsight:
-      "I noticed Northstar Studio is still relying on a manual booking flow and weak landing-page conversion.",
+      "I looked through your website and noticed customers can request service online, which is especially useful for urgent calls outside normal hours.",
     senderBackground:
-      "I build conversion-focused lead generation systems with better landing pages and automation.",
+      "This is the kind of workflow I build using web applications and automation for service businesses.",
   });
 
-  assert.match(draft.subject, /Northstar Studio|idea|quick/i);
-  assert.match(draft.message, /^Hi\b/i);
-  assert.match(draft.message, /I appreciate|appreciate the work/i);
-  assert.match(draft.message, /I noticed|I looked at|I saw/i);
-  assert.match(draft.message, /leaking|manual|conversion|missed|revenue|friction|lost/i);
-  assert.ok(
-    draft.message.indexOf("I appreciate") < draft.message.indexOf("I noticed"),
-    "The message should appreciate the business before the research insight.",
-  );
-  assert.match(draft.message, /I help businesses improve|I help with|I can help/i);
-  assert.match(draft.message, /Would it be worth|quick 10-minute chat|Would you be open/i);
+  assert.match(draft.subject, /Austin|idea|quick/i);
+  assert.match(draft.message, /^Hi Austin's Greatest Plumbing, /i);
+  assert.ok(draft.message.split(/\n\n/).length <= 3, "The draft should be up to 3 paragraphs.");
+  assert.match(draft.message, /I came across|I looked through|I noticed/i);
+  assert.match(draft.message, /opportunity|more responsive|make.*process|make it easier|help customers/i);
+  assert.match(draft.message, /I could build|I can help|This is the kind of workflow I build|This is the kind of work I build/i);
+  assert.match(draft.message, /If you're open to it|quick 10-minute conversation|10-minute chat/i);
+  assert.doesNotMatch(draft.message, /I appreciate the work|still appears to rely on|missed conversion opportunities|10\+ hours saved|businesses with similar issues/i);
   assert.doesNotMatch(draft.message, /desperate|game-changer|cutting-edge|synergy|seamless|just checking in/i);
   assert.ok(draft.message.split(/\s+/).length <= 130, "The draft must stay under 130 words.");
 });
