@@ -26,6 +26,7 @@ import {
   PLATFORM_LABELS,
   type OutreachPlatform,
 } from "@/lib/outreach";
+import { EmailBannerPreview } from "@/components/email-banner-preview";
 
 export function money(n: number) {
   if (!Number.isFinite(n)) return "—";
@@ -524,6 +525,14 @@ export function AnalysisResults({
             platform={platform}
             draft={createOutreachDraft(b.name, chosen)}
           />
+
+          {/* Email Banner Section */}
+          <div className="mt-8 border-t border-border pt-8">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+              Professional Email Banner
+            </h3>
+            <EmailBannerPreview result={result} />
+          </div>
         </section>
       )}
 

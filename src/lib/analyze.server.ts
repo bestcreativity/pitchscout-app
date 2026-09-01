@@ -110,10 +110,10 @@ type PageSignals = {
   https?: boolean;
 };
 
-async function fetchPage(url: string): Promise<PageSignals> {
+async function fetchPage(url: string, timeoutMs = 6000): Promise<PageSignals> {
   const start = Date.now();
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(url, {
@@ -149,7 +149,7 @@ async function fetchPage(url: string): Promise<PageSignals> {
     const phones = Array.from(
       new Set(html.match(/(?:tel:)([+\d][\d\s().-]{6,})/gi) ?? []),
     ).slice(0, 5);
-    const text = stripHtml(html).slice(0, 7000);
+    const text = stripHtml(html).slice(0, 5000);
 
     return {
       ok: true,
@@ -175,7 +175,7 @@ async function fetchPage(url: string): Promise<PageSignals> {
     if (e instanceof Error && e.name === "AbortError") {
       return {
         ok: false,
-        error: "Request timed out after 12 seconds",
+        error: `Request timed out after ${timeoutMs}ms`,
         loadMs: Date.now() - start,
       };
     }
@@ -203,12 +203,12 @@ async function fetchSubPages(base: string, links: string[]) {
     if (/(about|service|contact|pricing|work|product|shop)/i.test(abs)) {
       candidates.add(abs.split("#")[0] ?? abs);
     }
-    if (candidates.size >= 2) break;
+    if (candidates.size >= 1) break;
   }
   const results = await Promise.all(
     Array.from(candidates).map(async (u) => {
-      const p = await fetchPage(u);
-      return { url: u, ok: p.ok, text: p.text?.slice(0, 2500) ?? "" };
+      const p = await fetchPage(u, 3000);
+      return { url: u, ok: p.ok, text: p.text?.slice(0, 1500) ?? "" };
     }),
   );
   return results.filter((r) => r.ok && r.text);

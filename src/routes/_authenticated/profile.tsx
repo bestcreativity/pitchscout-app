@@ -65,7 +65,10 @@ function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success("Background saved");
     },
-    onError: () => toast.error("Could not save your background"),
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : "Could not save your background";
+      toast.error(message);
+    },
   });
 
   async function handlePasswordUpdate(e: React.FormEvent) {
