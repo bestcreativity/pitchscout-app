@@ -61,10 +61,25 @@ declare
   current_limit integer;
   current_weekly integer;
   current_monthly integer;
+  current_weekly_limit integer;
+  current_monthly_limit integer;
   now_ts timestamptz := now();
   week_start timestamptz;
   month_start timestamptz;
+  user_email text;
+  admin_email text := 'adetoyebiridwan1.0@gmail.com';
+  is_admin boolean := false;
 begin
+  -- Get user email to check if admin
+  user_email := auth.jwt() ->> 'email';
+  is_admin := (lower(coalesce(user_email, '')) = lower(admin_email));
+
+  -- Admin users have unlimited usage
+  if is_admin then
+    return query select true, 0, 999999;
+    return;
+  end if;
+
   insert into public.profiles (id, is_registered) values (auth.uid(), true)
   on conflict (id) do nothing;
 
@@ -91,8 +106,10 @@ begin
     end
   where id = auth.uid();
 
-  select usage_count, usage_limit, weekly_usage_count, monthly_usage_count
-  into current_count, current_limit, current_weekly, current_monthly
+  select usage_count, usage_limit, weekly_limit, monthly_limit,
+    weekly_usage_count, monthly_usage_count
+  into current_count, current_limit, current_weekly_limit, current_monthly_limit,
+    current_weekly, current_monthly
   from public.profiles
   where id = auth.uid() for update;
 
@@ -101,13 +118,13 @@ begin
     return;
   end if;
 
-  if current_weekly >= coalesce(weekly_limit, current_limit) then
-    return query select false, current_count, coalesce(weekly_limit, current_limit);
+  if current_weekly >= coalesce(current_weekly_limit, current_limit) then
+    return query select false, current_count, coalesce(current_weekly_limit, current_limit);
     return;
   end if;
 
-  if current_monthly >= coalesce(monthly_limit, current_limit) then
-    return query select false, current_count, coalesce(monthly_limit, current_limit);
+  if current_monthly >= coalesce(current_monthly_limit, current_limit) then
+    return query select false, current_count, coalesce(current_monthly_limit, current_limit);
     return;
   end if;
 
