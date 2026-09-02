@@ -2,7 +2,7 @@ const AI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/com
 const MODEL = "gemini-3.6-flash";
 const PAGE_TIMEOUT_MS = 1200;
 const SUB_PAGE_TIMEOUT_MS = 500;
-const AI_TIMEOUT_MS = 5000;
+const AI_TIMEOUT_MS = 15000;
 
 export type Opportunity = {
   title: string;
@@ -433,6 +433,7 @@ export async function runAnalysis(
 
   const requestBody = JSON.stringify({
       model: MODEL,
+      max_tokens: 1800,
       messages: [
         {
           role: "system",
