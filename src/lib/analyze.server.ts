@@ -1,5 +1,8 @@
 const AI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const MODEL = "gemini-3.6-flash";
+const PAGE_TIMEOUT_MS = 1800;
+const SUB_PAGE_TIMEOUT_MS = 800;
+const AI_TIMEOUT_MS = 3200;
 
 export type Opportunity = {
   title: string;
@@ -207,7 +210,7 @@ async function fetchSubPages(base: string, links: string[]) {
   }
   const results = await Promise.all(
     Array.from(candidates).map(async (u) => {
-      const p = await fetchPage(u, 3000);
+      const p = await fetchPage(u, SUB_PAGE_TIMEOUT_MS);
       return { url: u, ok: p.ok, text: p.text?.slice(0, 1500) ?? "" };
     }),
   );
@@ -383,7 +386,7 @@ export async function runAnalysis(
   if (!apiKey) throw new Error("Gemini AI is not configured for this project.");
 
   const url = normalizeUrl(rawUrl);
-  const page = await fetchPage(url);
+  const page = await fetchPage(url, PAGE_TIMEOUT_MS);
   const notes: string[] = [];
   let subPages: { url: string; text: string }[] = [];
 
@@ -428,13 +431,7 @@ export async function runAnalysis(
     subPages,
   };
 
-  const res = await fetch(AI_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  const requestBody = JSON.stringify({
       model: MODEL,
       messages: [
         {
@@ -454,8 +451,35 @@ export async function runAnalysis(
       ],
       tools: [{ type: "function", function: SCHEMA }],
       tool_choice: { type: "function", function: { name: SCHEMA.name } },
-    }),
-  });
+    });
+
+  let res: Response | undefined;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+    try {
+      res = await fetch(AI_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error("Analysis timed out. Please try a simpler website.");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timer);
+    }
+    if (res.ok || ![429, 500, 502, 503, 504].includes(res.status) || attempt === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  if (!res) throw new Error("The AI provider did not respond.");
 
   if (!res.ok) {
     const body = await res.text();
@@ -464,6 +488,8 @@ export async function runAnalysis(
       throw new Error("Rate limit reached. Please try again in a moment.");
     if (res.status === 402)
       throw new Error("AI credits exhausted. Add credits to continue.");
+    if ([500, 502, 503, 504].includes(res.status))
+      throw new Error("The AI provider is temporarily busy. Please try again in a moment.");
     throw new Error(`Analysis failed [${res.status}]`);
   }
 
