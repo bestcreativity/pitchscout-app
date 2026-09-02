@@ -1,8 +1,8 @@
 const AI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const MODEL = "gemini-3.6-flash";
-const PAGE_TIMEOUT_MS = 1800;
-const SUB_PAGE_TIMEOUT_MS = 800;
-const AI_TIMEOUT_MS = 3200;
+const PAGE_TIMEOUT_MS = 1200;
+const SUB_PAGE_TIMEOUT_MS = 500;
+const AI_TIMEOUT_MS = 5000;
 
 export type Opportunity = {
   title: string;
@@ -446,7 +446,7 @@ export async function runAnalysis(
           role: "user",
           content: `Analyze this business from the following scraped signals.\n\n${JSON.stringify(
             signals,
-          ).slice(0, 60000)}`,
+          ).slice(0, 24000)}`,
         },
       ],
       tools: [{ type: "function", function: SCHEMA }],
