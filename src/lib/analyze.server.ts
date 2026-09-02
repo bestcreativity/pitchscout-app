@@ -377,6 +377,129 @@ Hard rules:
 - Keep it human, specific, non-salesy, and brief.
 - List in "unverified" anything meaningful you could not confirm.`;
 
+function fallbackAnalysis(
+  url: string,
+  page: PageSignals,
+  notes: string[],
+): AnalysisResult {
+  const name = page.title?.split(/[|\-:]/)[0]?.trim() || new URL(url).hostname;
+  const findings: AnalysisResult["websiteFindings"] = [];
+  const opportunities: Opportunity[] = [];
+
+  if (!page.hasViewport) {
+    findings.push({
+      finding: "Mobile viewport support could not be confirmed.",
+      evidence: "No viewport meta tag was detected in the page markup.",
+      impact: "Mobile visitors may see a poor layout or reduced conversion.",
+    });
+    opportunities.push({
+      title: "Mobile experience improvement",
+      score: 72,
+      confidence: "Medium",
+      valueLow: 500,
+      valueHigh: 1800,
+      problem: "The page does not declare a mobile viewport.",
+      evidence: "No viewport meta tag was detected.",
+      opportunity: "Improve the experience for visitors on phones and tablets.",
+      solution: "Audit and improve responsive layouts, spacing, and conversion paths.",
+      benefit: "Make the site easier to use and reduce mobile drop-off.",
+      pitchAngle: "I noticed the mobile viewport setup could be improved and can audit the key visitor paths.",
+    });
+  }
+
+  if (!page.hasForm && !page.emails?.length && !page.phones?.length) {
+    findings.push({
+      finding: "A direct contact path was not found in the page markup.",
+      evidence: "No form, email, or phone number was detected.",
+      impact: "Interested visitors may have no obvious way to start a conversation.",
+    });
+    opportunities.push({
+      title: "Contact conversion path",
+      score: 78,
+      confidence: "Medium",
+      valueLow: 400,
+      valueHigh: 1500,
+      problem: "A direct contact path could not be confirmed.",
+      evidence: "No form, email, or phone number was detected.",
+      opportunity: "Give qualified visitors a clear next step.",
+      solution: "Add and test a focused contact or booking path.",
+      benefit: "Make it easier for interested visitors to become leads.",
+      pitchAngle: "I could map the visitor path and add a clearer way for qualified prospects to reach you.",
+    });
+  }
+
+  if (!page.hasSchema) {
+    findings.push({
+      finding: "Structured data was not detected.",
+      evidence: "No JSON-LD schema block was found in the page markup.",
+      impact: "Search engines may have less context about the business and its services.",
+    });
+  }
+
+  if (!opportunities.length) {
+    opportunities.push({
+      title: "Website conversion review",
+      score: 60,
+      confidence: "Low",
+      valueLow: 300,
+      valueHigh: 1200,
+      problem: "A full business opportunity could not be verified automatically.",
+      evidence: "The page was fetched, but the AI analysis service did not respond in time.",
+      opportunity: "Review the main visitor journey for friction and missed enquiries.",
+      solution: "Run a focused audit of the homepage, contact path, and primary call to action.",
+      benefit: "Identify practical improvements before investing in larger changes.",
+      pitchAngle: "I can do a focused review of the main visitor journey and show the highest-impact improvements.",
+    });
+  }
+
+  opportunities.sort((a, b) => b.score - a.score);
+  const bestPitch = opportunities[0];
+  const contact: ContactInfo = {
+    emails: page.emails ?? [],
+    phones: (page.phones ?? []).map((phone) => phone.replace(/^tel:/i, "").trim()),
+    socials: (page.socialLinks ?? []).map((socialUrl) => ({
+      platform: platformOf(socialUrl),
+      url: socialUrl,
+    })),
+    address: "Not available",
+    contactPageUrl: "Not available",
+  };
+
+  return {
+    url,
+    fetched: page.ok,
+    partial: true,
+    notes: Array.from(new Set([
+      ...notes,
+      "AI analysis was unavailable, so this report uses verified website signals only.",
+    ])).slice(0, 6),
+    business: {
+      name,
+      industry: "Not available",
+      location: "Not available",
+      whatTheyDo: page.metaDescription || "Not available",
+      whoTheyServe: "Not available",
+      services: "Not available",
+      businessModel: "Not available",
+    },
+    contact,
+    pitchStructure: {
+      subjectLine: `A quick idea for ${name}`,
+      opening: bestPitch.pitchAngle,
+      points: [
+        { point: "Specific finding", detail: bestPitch.evidence },
+        { point: "Business impact", detail: bestPitch.benefit },
+        { point: "Practical next step", detail: bestPitch.solution },
+      ],
+      callToAction: "Would you be open to a short conversation about this?",
+      toneTips: "Keep the message specific, helpful, and low pressure.",
+    },
+    bestPitch,
+    opportunities,
+    websiteFindings: findings,
+  };
+}
+
 
 export async function runAnalysis(
   rawUrl: string,
@@ -470,7 +593,7 @@ export async function runAnalysis(
       });
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        throw new Error("Analysis timed out. Please try a simpler website.");
+        return fallbackAnalysis(url, page, ["The AI provider took too long to respond."]);
       }
       throw error;
     } finally {
@@ -490,7 +613,7 @@ export async function runAnalysis(
     if (res.status === 402)
       throw new Error("AI credits exhausted. Add credits to continue.");
     if ([500, 502, 503, 504].includes(res.status))
-      throw new Error("The AI provider is temporarily busy. Please try again in a moment.");
+      return fallbackAnalysis(url, page, ["The AI provider is temporarily busy."]);
     throw new Error(`Analysis failed [${res.status}]`);
   }
 
