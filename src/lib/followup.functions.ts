@@ -17,7 +17,7 @@ export const generateFollowUpMessage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("researches")
-      .select("url, business_name, best_pitch_title, result")
+      .select("url, business_name, best_pitch_title, verified_email, result")
       .eq("id", data.id)
       .eq("user_id", context.userId)
       .single();
@@ -34,6 +34,7 @@ export const generateFollowUpMessage = createServerFn({ method: "POST" })
       url: row.url,
       businessName: row.business_name,
       bestPitchTitle: row.best_pitch_title,
+      verifiedEmail: row.verified_email,
       result: row.result,
       followUpNumber: data.followUpNumber,
       background: profile?.background ?? null,

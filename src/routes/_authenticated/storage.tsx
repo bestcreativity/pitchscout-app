@@ -98,12 +98,6 @@ function StoragePage() {
     }
   }
 
-  function emailUrl(email: string, subject: string, message: string) {
-    const params = new URLSearchParams({ subject, body: message });
-    return `mailto:${email}?${params.toString()}`;
-  }
-
-
   return (
     <main className="min-h-screen bg-background px-5 py-12 sm:px-8">
       <div className="mx-auto w-full max-w-3xl">
@@ -276,7 +270,7 @@ function StoragePage() {
                             <CopyButton text={`Subject: ${item.subject}\n\n${item.message}`} />
                             {r.verified_email && (
                               <Button asChild size="sm" variant="default" className="rounded-full">
-                                <a href={emailUrl(r.verified_email, item.subject, item.message)}>
+                                <a href={outreachUrl("gmail", { subject: item.subject, message: item.message }, r.verified_email)} target="_blank" rel="noreferrer noopener">
                                   <Mail className="size-4" /> Open email
                                 </a>
                               </Button>

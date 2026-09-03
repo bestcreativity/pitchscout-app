@@ -5,6 +5,7 @@ export type FollowUpInput = {
   url: string;
   businessName: string | null;
   bestPitchTitle: string | null;
+  verifiedEmail?: string | null;
   result: unknown;
   followUpNumber: number;
   background?: string | null;
@@ -34,9 +35,12 @@ Rules:
   const user = `Business URL: ${input.url}
 Business name: ${input.businessName ?? "Not available"}
 Chosen pitch: ${input.bestPitchTitle ?? "Not available"}
+Verified lead email: ${input.verifiedEmail ?? "Not available"}
 Follow-up number: ${input.followUpNumber}
 ${input.tone ? `Desired tone: ${input.tone}` : ""}
 ${input.background ? `Consultant background/services:\n"""\n${input.background.slice(0, 3000)}\n"""` : ""}
+
+The first message already sent to this lead is stored in the research data. Build on it without repeating it word for word.
 
 Research data (JSON):
 ${JSON.stringify(input.result).slice(0, 40000)}`;

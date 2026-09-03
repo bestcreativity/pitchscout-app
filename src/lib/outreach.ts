@@ -85,11 +85,13 @@ export function cleanDraft(draft: OutreachDraft): OutreachDraft {
 export function outreachUrl(
   platform: OutreachPlatform,
   draft: OutreachDraft,
+  recipient?: string,
 ) {
   const subject = encodeURIComponent(draft.subject);
   const body = encodeURIComponent(draft.message);
+  const to = recipient ? `&to=${encodeURIComponent(recipient)}` : "";
   if (platform === "gmail") {
-    return `https://mail.google.com/mail/?view=cm&fs=1&tf=1&su=${subject}&body=${body}`;
+    return `https://mail.google.com/mail/?view=cm&fs=1&tf=1&su=${subject}&body=${body}${to}`;
   }
   if (platform === "x") {
     return `https://twitter.com/intent/post?text=${body}`;
