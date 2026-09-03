@@ -11,6 +11,7 @@ export const saveResearch = createServerFn({ method: "POST" })
         url: z.string().min(1),
         businessName: z.string().nullable().optional(),
         bestPitchTitle: z.string().nullable().optional(),
+        verifiedEmail: z.string().email().optional(),
         result: z.unknown(),
       })
       .parse(data),
@@ -22,6 +23,8 @@ export const saveResearch = createServerFn({ method: "POST" })
         user_id: context.userId,
         url: data.url,
         business_name: data.businessName ?? null,
+        verified_email: data.verifiedEmail ?? null,
+        email_verified_at: data.verifiedEmail ? new Date().toISOString() : null,
         best_pitch_title: data.bestPitchTitle ?? null,
         result: data.result as never,
       })
@@ -36,7 +39,7 @@ export const listResearches = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("researches")
-      .select("id, url, business_name, best_pitch_title, result, created_at")
+      .select("id, url, business_name, best_pitch_title, verified_email, email_verified_at, result, created_at")
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -59,6 +62,22 @@ export const updateResearch = createServerFn({ method: "POST" })
       .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const verifyResearchEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z.object({ id: z.string().uuid(), email: z.string().trim().email() }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const email = data.email.toLowerCase();
+    const { error } = await context.supabase
+      .from("researches")
+      .update({ verified_email: email, email_verified_at: new Date().toISOString() })
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { email, verifiedAt: new Date().toISOString() };
   });
 
 export const deleteResearch = createServerFn({ method: "POST" })

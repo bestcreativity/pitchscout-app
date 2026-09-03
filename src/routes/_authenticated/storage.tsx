@@ -2,12 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowLeft, ChevronDown, Loader2, MessageSquarePlus, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Loader2, Mail, MessageSquarePlus, Trash2 } from "lucide-react";
 
 import { AnalysisResults } from "@/components/analysis-results";
 import { CopyButton } from "@/components/CopyButton";
 import { Button } from "@/components/ui/button";
-import { deleteResearch, listResearches, updateResearch } from "@/lib/research.functions";
+import { deleteResearch, listResearches, updateResearch, verifyResearchEmail } from "@/lib/research.functions";
 import { generateFollowUpMessage } from "@/lib/followup.functions";
 import type { AnalysisResult } from "@/lib/analyze.server";
 import {
@@ -15,6 +15,7 @@ import {
   PLATFORM_LABELS,
   type OutreachPlatform,
 } from "@/lib/outreach";
+import { Input } from "@/components/ui/input";
 
 
 export const Route = createFileRoute("/_authenticated/storage")({
@@ -43,11 +44,15 @@ function StoragePage() {
   const remove = useServerFn(deleteResearch);
   const followUp = useServerFn(generateFollowUpMessage);
   const update = useServerFn(updateResearch);
+  const verifyEmail = useServerFn(verifyResearchEmail);
   const queryClient = useQueryClient();
   const [open, setOpen] = useState<string | null>(null);
   const [followUps, setFollowUps] = useState<Record<string, { number: number; subject: string; message: string }[]>>({});
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [followUpError, setFollowUpError] = useState<Record<string, string>>({});
+  const [emailDrafts, setEmailDrafts] = useState<Record<string, string>>({});
+  const [emailErrors, setEmailErrors] = useState<Record<string, string>>({});
+  const [emailSaving, setEmailSaving] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["researches"],
@@ -73,6 +78,29 @@ function StoragePage() {
     } finally {
       setPendingId(null);
     }
+  }
+
+  async function onVerifyEmail(id: string) {
+    const email = emailDrafts[id]?.trim() ?? "";
+    setEmailSaving(id);
+    setEmailErrors((p) => ({ ...p, [id]: "" }));
+    try {
+      await verifyEmail({ data: { id, email } });
+      await queryClient.invalidateQueries({ queryKey: ["researches"] });
+      setEmailDrafts((p) => ({ ...p, [id]: "" }));
+    } catch (e) {
+      setEmailErrors((p) => ({
+        ...p,
+        [id]: e instanceof Error ? e.message : "Enter a valid email address.",
+      }));
+    } finally {
+      setEmailSaving(null);
+    }
+  }
+
+  function emailUrl(email: string, subject: string, message: string) {
+    const params = new URLSearchParams({ subject, body: message });
+    return `mailto:${email}?${params.toString()}`;
   }
 
 
@@ -147,6 +175,17 @@ function StoragePage() {
                         {r.best_pitch_title}
                       </p>
                     )}
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <Mail className="size-4 text-muted-foreground" />
+                      {r.verified_email ? (
+                        <>
+                          <span className="text-sm text-foreground">{r.verified_email}</span>
+                          <span className="inline-flex items-center gap-1 text-xs text-success"><Check className="size-3.5" /> Verified</span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">No verified email</span>
+                      )}
+                    </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {new Date(r.created_at).toLocaleString()}
                     </p>
@@ -204,6 +243,29 @@ function StoragePage() {
                   </p>
                 )}
 
+                <div className="mt-5 rounded-2xl border border-border bg-background p-4">
+                  <p className="text-sm font-medium text-foreground">Verify prospect email</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Enter an email you confirmed manually. We validate the format and save it to this research.</p>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                    <Input
+                      type="email"
+                      value={emailDrafts[r.id] ?? r.verified_email ?? ""}
+                      onChange={(event) => setEmailDrafts((p) => ({ ...p, [r.id]: event.target.value }))}
+                      placeholder="prospect@business.com"
+                      className="sm:max-w-sm"
+                    />
+                    <Button
+                      size="sm"
+                      disabled={emailSaving === r.id || !(emailDrafts[r.id] ?? r.verified_email)?.trim()}
+                      onClick={() => onVerifyEmail(r.id)}
+                    >
+                      {emailSaving === r.id ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+                      Verify & save
+                    </Button>
+                  </div>
+                  {emailErrors[r.id] && <p className="mt-2 text-sm text-destructive">{emailErrors[r.id]}</p>}
+                </div>
+
                 {sentFollowUps.length > 0 && (
                   <div className="mt-6 rounded-2xl border border-border bg-background p-5">
                     {sentFollowUps.map((item) => (
@@ -212,6 +274,13 @@ function StoragePage() {
                           <p className="text-sm font-medium text-foreground">Follow up {item.number}</p>
                           <div className="flex flex-wrap justify-end gap-2">
                             <CopyButton text={`Subject: ${item.subject}\n\n${item.message}`} />
+                            {r.verified_email && (
+                              <Button asChild size="sm" variant="default" className="rounded-full">
+                                <a href={emailUrl(r.verified_email, item.subject, item.message)}>
+                                  <Mail className="size-4" /> Open email
+                                </a>
+                              </Button>
+                            )}
                             {(Object.keys(PLATFORM_LABELS) as OutreachPlatform[]).map((platform) => (
                               <Button key={platform} asChild size="sm" variant="outline" className="rounded-full">
                                 <a
