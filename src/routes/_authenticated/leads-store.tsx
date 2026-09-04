@@ -88,8 +88,8 @@ function LeadsStorePage() {
       setLeads((current) => current.filter((item) => item.id !== lead.id));
       removeStoredLead(lead.id);
       refresh();
-    } catch {
-      window.alert("Could not move this lead to research right now.");
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Could not move this lead to research right now.");
     }
   }
 

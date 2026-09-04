@@ -17,6 +17,21 @@ export const saveResearch = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
+    const normalizedUrl = data.url.trim().toLowerCase().replace(/\/$/, "");
+    const normalizedEmail = data.verifiedEmail?.trim().toLowerCase();
+    const { data: existingResearches, error: duplicateCheckError } = await context.supabase
+      .from("researches")
+      .select("id, url, verified_email")
+      .eq("user_id", context.userId);
+    if (duplicateCheckError) throw new Error(duplicateCheckError.message);
+
+    const alreadySaved = (existingResearches ?? []).some((research) => {
+      const existingUrl = research.url.trim().toLowerCase().replace(/\/$/, "");
+      const existingEmail = research.verified_email?.trim().toLowerCase();
+      return existingUrl === normalizedUrl || Boolean(normalizedEmail && existingEmail === normalizedEmail);
+    });
+    if (alreadySaved) throw new Error("leads already saved");
+
     const { data: row, error } = await context.supabase
       .from("researches")
       .insert({
