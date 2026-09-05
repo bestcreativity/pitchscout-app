@@ -268,13 +268,15 @@ function StoragePage() {
                           <p className="text-sm font-medium text-foreground">Follow up {item.number}</p>
                           <div className="flex flex-wrap justify-end gap-2">
                             <CopyButton text={`Subject: ${item.subject}\n\n${item.message}`} />
-                            {r.verified_email && (
-                              <Button asChild size="sm" variant="default" className="rounded-full">
-                                <a href={outreachUrl("gmail", { subject: item.subject, message: item.message }, r.verified_email)} target="_blank" rel="noreferrer noopener">
-                                  <Mail className="size-4" /> Open email
-                                </a>
-                              </Button>
-                            )}
+                            <Button asChild size="sm" variant="default" className="rounded-full">
+                              <a
+                                href={outreachUrl("gmail", { subject: item.subject, message: item.message }, r.verified_email ?? undefined)}
+                                target="_blank"
+                                rel="noreferrer noopener"
+                              >
+                                <Mail className="size-4" /> Open Gmail
+                              </a>
+                            </Button>
                             {(Object.keys(PLATFORM_LABELS) as OutreachPlatform[]).map((platform) => (
                               <Button key={platform} asChild size="sm" variant="outline" className="rounded-full">
                                 <a
